@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { motion, useReducedMotion, useScroll, useTransform, AnimatePresence } from "framer-motion";
+import { motion, useReducedMotion, useScroll, useSpring, useTransform, AnimatePresence, type MotionValue } from "framer-motion";
 
 // ============================================================
 // REPLACE THESE PLACEHOLDER LINKS BEFORE LAUNCH
@@ -63,6 +63,8 @@ function LandingPage() {
   const reduce = useReducedMotion();
   return (
     <main className="relative min-h-screen bg-background text-foreground grain-bg overflow-x-clip">
+      <ScrollProgress />
+      <GlobalBackdrop reduce={!!reduce} />
       <Nav />
       <Hero reduce={!!reduce} />
       <Manifesto reduce={!!reduce} />
@@ -74,6 +76,98 @@ function LandingPage() {
       <Footer />
       <StickyMobileCTA />
     </main>
+  );
+}
+
+/* ---------------- SCROLL PROGRESS RAIL ---------------- */
+function ScrollProgress() {
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, { stiffness: 120, damping: 30, mass: 0.4 });
+  return (
+    <motion.div
+      aria-hidden
+      className="fixed left-0 right-0 top-0 z-[60] h-[2px] origin-left bg-gradient-to-r from-jade via-jade/70 to-gold"
+      style={{ scaleX, boxShadow: "0 0 18px rgba(80,220,160,0.55)" }}
+    />
+  );
+}
+
+/* ---------------- GLOBAL SCROLL-LINKED BACKDROP ---------------- */
+function GlobalBackdrop({ reduce }: { reduce: boolean }) {
+  const { scrollYProgress } = useScroll();
+  const smooth = useSpring(scrollYProgress, { stiffness: 90, damping: 30, mass: 0.5 });
+  const orbAY = useTransform(smooth, [0, 1], ["-8%", "42%"]);
+  const orbBY = useTransform(smooth, [0, 1], ["6%", "-36%"]);
+  const orbCY = useTransform(smooth, [0, 1], ["0%", "24%"]);
+  const orbAX = useTransform(smooth, [0, 1], ["-4%", "8%"]);
+  const orbBX = useTransform(smooth, [0, 1], ["3%", "-10%"]);
+  const gridY = useTransform(smooth, [0, 1], ["0%", "18%"]);
+  const gridOpacity = useTransform(smooth, [0, 0.25, 0.75, 1], [0, 0.35, 0.35, 0.1]);
+  const hue = useTransform(smooth, [0, 0.5, 1], [0, 8, -6]);
+  if (reduce) return null;
+  return (
+    <div aria-hidden className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+      <motion.div
+        className="absolute -left-40 top-[10vh] h-[70vh] w-[70vh] rounded-full bg-jade/[0.10] blur-[160px] will-change-transform"
+        style={{ y: orbAY, x: orbAX, filter: useTransform(hue, (h) => `hue-rotate(${h}deg) blur(160px)`) }}
+      />
+      <motion.div
+        className="absolute -right-32 top-[55vh] h-[60vh] w-[60vh] rounded-full bg-gold/[0.09] blur-[160px] will-change-transform"
+        style={{ y: orbBY, x: orbBX }}
+      />
+      <motion.div
+        className="absolute left-1/2 top-[120vh] -translate-x-1/2 h-[80vh] w-[80vh] rounded-full bg-jade/[0.06] blur-[180px] will-change-transform"
+        style={{ y: orbCY }}
+      />
+      <motion.div
+        className="absolute inset-x-0 top-0 h-[220vh] will-change-transform"
+        style={{
+          y: gridY,
+          opacity: gridOpacity,
+          backgroundImage:
+            "linear-gradient(rgba(80,220,160,0.14) 1px, transparent 1px), linear-gradient(90deg, rgba(196,163,90,0.10) 1px, transparent 1px)",
+          backgroundSize: "120px 120px",
+          maskImage: "radial-gradient(ellipse at 50% 40%, rgba(0,0,0,0.55) 0%, transparent 70%)",
+          WebkitMaskImage: "radial-gradient(ellipse at 50% 40%, rgba(0,0,0,0.55) 0%, transparent 70%)",
+        }}
+      />
+    </div>
+  );
+}
+
+/* ---------------- PARALLAX (scroll-linked depth wrapper) ---------------- */
+function Parallax({
+  children,
+  speed = 60,
+  className,
+  as = "div",
+}: {
+  children: ReactNode;
+  /** Positive values move up as user scrolls down (foreground feel). Use negative for background drift. */
+  speed?: number;
+  className?: string;
+  as?: "div" | "span";
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const reduce = useReducedMotion();
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start end", "end start"],
+  });
+  const raw = useTransform(scrollYProgress, [0, 1], [speed, -speed]);
+  const y = useSpring(raw, { stiffness: 110, damping: 26, mass: 0.35 });
+  if (reduce) {
+    return <div ref={ref} className={className}>{children}</div>;
+  }
+  const Comp = as === "span" ? motion.span : motion.div;
+  return (
+    <Comp
+      ref={ref as never}
+      className={className}
+      style={{ y: y as MotionValue<number>, willChange: "transform" }}
+    >
+      {children}
+    </Comp>
   );
 }
 
@@ -583,22 +677,25 @@ function Replaces() {
     <section className="relative py-24 md:py-32 px-6">
       <div className="mx-auto max-w-7xl">
         <div className="mb-16 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
-          <Reveal dir="left" distance={100}>
-            <div className="mb-4 flex items-center gap-3 text-xs uppercase tracking-[0.28em] text-muted-foreground">
-              <span className="h-px w-10 bg-jade/60" />
-              What this replaces
-            </div>
-            <h2 className="font-display text-balance text-[clamp(2rem,4.5vw,3.5rem)] leading-[1.05]">
-              Four things your life <br className="hidden md:block" />
-              <span className="italic text-muted-foreground">was never meant to run on.</span>
-            </h2>
-          </Reveal>
+          <Parallax speed={50}>
+            <Reveal dir="left" distance={100}>
+              <div className="mb-4 flex items-center gap-3 text-xs uppercase tracking-[0.28em] text-muted-foreground">
+                <span className="h-px w-10 bg-jade/60" />
+                What this replaces
+              </div>
+              <h2 className="font-display text-balance text-[clamp(2rem,4.5vw,3.5rem)] leading-[1.05]">
+                Four things your life <br className="hidden md:block" />
+                <span className="italic text-muted-foreground">was never meant to run on.</span>
+              </h2>
+            </Reveal>
+          </Parallax>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {items.map((item, i) => (
-            <TiltCard key={item.title} index={i}>
-              <div className="glass-panel p-8 h-full flex flex-col gap-6 relative overflow-hidden group">
+            <Parallax key={item.title} speed={i % 2 === 0 ? 40 : -30}>
+              <TiltCard index={i}>
+                <div className="glass-panel p-8 h-full flex flex-col gap-6 relative overflow-hidden group">
                 <div className="absolute -top-16 -right-16 h-40 w-40 rounded-full bg-jade/5 blur-2xl group-hover:bg-jade/10 transition" />
                 <div className="flex items-center justify-between">
                   <span className="font-mono text-xs text-muted-foreground/60">0{i + 1}</span>
@@ -610,6 +707,7 @@ function Replaces() {
                 </div>
               </div>
             </TiltCard>
+            </Parallax>
           ))}
         </div>
       </div>
@@ -702,7 +800,9 @@ function HowItWorks() {
             >
               <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12">
                 <div className="md:col-span-3 flex md:flex-col items-baseline md:items-start gap-4">
-                  <span className="font-display text-6xl md:text-7xl text-jade/80 leading-none">{s.n}</span>
+                  <Parallax speed={60} as="span" className="inline-block">
+                    <span className="font-display text-6xl md:text-7xl text-jade/80 leading-none">{s.n}</span>
+                  </Parallax>
                   <span className="h-px flex-1 md:w-16 md:flex-none bg-border" />
                 </div>
                 <div className="md:col-span-6">
@@ -808,22 +908,25 @@ function Packages() {
   return (
     <section id="packages" className="relative py-28 md:py-40 px-6">
       <div className="mx-auto max-w-7xl">
-        <Reveal dir="left" distance={100} className="mb-16 max-w-3xl">
-          <div className="mb-4 flex items-center gap-3 text-xs uppercase tracking-[0.28em] text-muted-foreground">
-            <span className="h-px w-10 bg-jade/60" />
-            Packages
-          </div>
-          <h2 className="font-display text-balance text-[clamp(2rem,5vw,4rem)] leading-[1.02]">
-            Choose the level <span className="italic text-muted-foreground">that fits.</span>
-          </h2>
-          <p className="mt-6 text-lg leading-relaxed text-muted-foreground max-w-2xl">
-            Start with the map, build the core system, or apply for a private operating system
-            built around your full life.
-          </p>
-        </Reveal>
+        <Parallax speed={70} className="mb-16 max-w-3xl">
+          <Reveal dir="left" distance={100}>
+            <div className="mb-4 flex items-center gap-3 text-xs uppercase tracking-[0.28em] text-muted-foreground">
+              <span className="h-px w-10 bg-jade/60" />
+              Packages
+            </div>
+            <h2 className="font-display text-balance text-[clamp(2rem,5vw,4rem)] leading-[1.02]">
+              Choose the level <span className="italic text-muted-foreground">that fits.</span>
+            </h2>
+            <p className="mt-6 text-lg leading-relaxed text-muted-foreground max-w-2xl">
+              Start with the map, build the core system, or apply for a private operating system
+              built around your full life.
+            </p>
+          </Reveal>
+        </Parallax>
 
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 items-stretch">
           {packages.map((p, i) => (
+            <Parallax key={p.name} speed={[50, -20, 30, -40][i] ?? 0}>
             <motion.div
               key={p.name}
               initial={{ opacity: 0, y: 80, scale: 0.9, rotate: i % 2 === 0 ? -2 : 2 }}
@@ -889,6 +992,7 @@ function Packages() {
                 </a>
               </div>
             </motion.div>
+            </Parallax>
           ))}
         </div>
 
