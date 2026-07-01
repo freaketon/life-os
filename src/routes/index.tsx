@@ -285,7 +285,7 @@ function Nav() {
 }
 
 /* ---------------- HERO — 3D layered parallax scene ---------------- */
-function Hero({ reduce }: { reduce: boolean }) {
+function Hero({ reduce, isMobile }: { reduce: boolean; isMobile: boolean }) {
   const sectionRef = useRef<HTMLElement>(null);
 
   const { scrollYProgress } = useScroll({
