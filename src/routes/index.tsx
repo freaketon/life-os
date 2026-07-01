@@ -63,6 +63,8 @@ function LandingPage() {
   const reduce = useReducedMotion();
   return (
     <main className="relative min-h-screen bg-background text-foreground grain-bg overflow-x-clip">
+      <ScrollProgress />
+      <GlobalBackdrop reduce={!!reduce} />
       <Nav />
       <Hero reduce={!!reduce} />
       <Manifesto reduce={!!reduce} />
@@ -74,6 +76,98 @@ function LandingPage() {
       <Footer />
       <StickyMobileCTA />
     </main>
+  );
+}
+
+/* ---------------- SCROLL PROGRESS RAIL ---------------- */
+function ScrollProgress() {
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, { stiffness: 120, damping: 30, mass: 0.4 });
+  return (
+    <motion.div
+      aria-hidden
+      className="fixed left-0 right-0 top-0 z-[60] h-[2px] origin-left bg-gradient-to-r from-jade via-jade/70 to-gold"
+      style={{ scaleX, boxShadow: "0 0 18px rgba(80,220,160,0.55)" }}
+    />
+  );
+}
+
+/* ---------------- GLOBAL SCROLL-LINKED BACKDROP ---------------- */
+function GlobalBackdrop({ reduce }: { reduce: boolean }) {
+  const { scrollYProgress } = useScroll();
+  const smooth = useSpring(scrollYProgress, { stiffness: 90, damping: 30, mass: 0.5 });
+  const orbAY = useTransform(smooth, [0, 1], ["-8%", "42%"]);
+  const orbBY = useTransform(smooth, [0, 1], ["6%", "-36%"]);
+  const orbCY = useTransform(smooth, [0, 1], ["0%", "24%"]);
+  const orbAX = useTransform(smooth, [0, 1], ["-4%", "8%"]);
+  const orbBX = useTransform(smooth, [0, 1], ["3%", "-10%"]);
+  const gridY = useTransform(smooth, [0, 1], ["0%", "18%"]);
+  const gridOpacity = useTransform(smooth, [0, 0.25, 0.75, 1], [0, 0.35, 0.35, 0.1]);
+  const hue = useTransform(smooth, [0, 0.5, 1], [0, 8, -6]);
+  if (reduce) return null;
+  return (
+    <div aria-hidden className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+      <motion.div
+        className="absolute -left-40 top-[10vh] h-[70vh] w-[70vh] rounded-full bg-jade/[0.10] blur-[160px] will-change-transform"
+        style={{ y: orbAY, x: orbAX, filter: useTransform(hue, (h) => `hue-rotate(${h}deg) blur(160px)`) }}
+      />
+      <motion.div
+        className="absolute -right-32 top-[55vh] h-[60vh] w-[60vh] rounded-full bg-gold/[0.09] blur-[160px] will-change-transform"
+        style={{ y: orbBY, x: orbBX }}
+      />
+      <motion.div
+        className="absolute left-1/2 top-[120vh] -translate-x-1/2 h-[80vh] w-[80vh] rounded-full bg-jade/[0.06] blur-[180px] will-change-transform"
+        style={{ y: orbCY }}
+      />
+      <motion.div
+        className="absolute inset-x-0 top-0 h-[220vh] will-change-transform"
+        style={{
+          y: gridY,
+          opacity: gridOpacity,
+          backgroundImage:
+            "linear-gradient(rgba(80,220,160,0.14) 1px, transparent 1px), linear-gradient(90deg, rgba(196,163,90,0.10) 1px, transparent 1px)",
+          backgroundSize: "120px 120px",
+          maskImage: "radial-gradient(ellipse at 50% 40%, rgba(0,0,0,0.55) 0%, transparent 70%)",
+          WebkitMaskImage: "radial-gradient(ellipse at 50% 40%, rgba(0,0,0,0.55) 0%, transparent 70%)",
+        }}
+      />
+    </div>
+  );
+}
+
+/* ---------------- PARALLAX (scroll-linked depth wrapper) ---------------- */
+function Parallax({
+  children,
+  speed = 60,
+  className,
+  as = "div",
+}: {
+  children: ReactNode;
+  /** Positive values move up as user scrolls down (foreground feel). Use negative for background drift. */
+  speed?: number;
+  className?: string;
+  as?: "div" | "span";
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const reduce = useReducedMotion();
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start end", "end start"],
+  });
+  const raw = useTransform(scrollYProgress, [0, 1], [speed, -speed]);
+  const y = useSpring(raw, { stiffness: 110, damping: 26, mass: 0.35 });
+  if (reduce) {
+    return <div ref={ref} className={className}>{children}</div>;
+  }
+  const Comp = as === "span" ? motion.span : motion.div;
+  return (
+    <Comp
+      ref={ref as never}
+      className={className}
+      style={{ y: y as MotionValue<number>, willChange: "transform" }}
+    >
+      {children}
+    </Comp>
   );
 }
 
