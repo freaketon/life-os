@@ -1035,5 +1035,3 @@ function StickyMobileCTA() {
   );
 }
 
-// Unused import guard (keep MANIFESTO_VIDEO_SRC referenced for future secondary section)
-void MANIFESTO_VIDEO_SRC;
