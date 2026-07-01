@@ -1,8 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { motion, useReducedMotion, useScroll, useTransform, AnimatePresence } from "framer-motion";
-import video1Asset from "@/assets/video_bg_1.mp4.asset.json";
-import video2Asset from "@/assets/video_bg_2.mp4.asset.json";
 
 // ============================================================
 // REPLACE THESE PLACEHOLDER LINKS BEFORE LAUNCH
