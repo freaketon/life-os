@@ -533,12 +533,14 @@ function Manifesto({ reduce }: { reduce: boolean }) {
         </div>
 
         <motion.div
-          ref={ref}
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+          ref={ref}
           className="glass-panel-strong relative overflow-hidden p-10 md:p-20"
+          style={{ boxShadow: "0 60px 160px -40px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.05)" }}
+        >
           style={{ boxShadow: "0 60px 160px -40px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.05)" }}
         >
           {/* Animated light sweep */}
