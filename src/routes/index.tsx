@@ -196,17 +196,29 @@ function Hero({ reduce }: { reduce: boolean }) {
       style={{ height: "200vh" }}
     >
       <div className="sticky top-0 h-screen w-full overflow-hidden">
-        {/* Video background — paused by default, scroll scrubs currentTime */}
+        {/* Video background — scroll scrubs currentTime, mouse + scroll drive parallax transform */}
         {!reduce ? (
-          <video
-            ref={videoRef}
-            className="absolute inset-0 h-full w-full object-cover"
-            src={HERO_VIDEO_SRC}
-            muted
-            playsInline
-            preload="auto"
-            // Do NOT autoplay. Playback is scroll-driven via requestAnimationFrame.
-          />
+          <motion.div
+            className="absolute inset-0 h-full w-full will-change-transform"
+            style={{
+              y: videoY,
+              scale: videoScale,
+              x: mouse.x * -24,
+              rotateX: mouse.y * -2,
+              rotateY: mouse.x * 2,
+              transformPerspective: 1200,
+              transition: "transform 600ms cubic-bezier(0.22,1,0.36,1)",
+            }}
+          >
+            <video
+              ref={videoRef}
+              className="absolute inset-0 h-full w-full object-cover"
+              src={HERO_VIDEO_SRC}
+              muted
+              playsInline
+              preload="auto"
+            />
+          </motion.div>
         ) : (
           // Static fallback for reduced motion
           <div
