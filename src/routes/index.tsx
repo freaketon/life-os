@@ -59,14 +59,28 @@ export const Route = createFileRoute("/")({
   component: LandingPage,
 });
 
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    // Small viewport OR coarse pointer (phones/most tablets) → mobile.
+    const mq = window.matchMedia("(max-width: 768px), (pointer: coarse)");
+    const update = () => setIsMobile(mq.matches);
+    update();
+    mq.addEventListener?.("change", update);
+    return () => mq.removeEventListener?.("change", update);
+  }, []);
+  return isMobile;
+}
+
 function LandingPage() {
   const reduce = useReducedMotion();
+  const isMobile = useIsMobile();
   return (
     <main className="relative min-h-screen bg-background text-foreground grain-bg overflow-x-clip">
       <ScrollProgress />
-      <GlobalBackdrop reduce={!!reduce} />
+      <GlobalBackdrop reduce={!!reduce} isMobile={isMobile} />
       <Nav />
-      <Hero reduce={!!reduce} />
+      <Hero reduce={!!reduce} isMobile={isMobile} />
       <Manifesto reduce={!!reduce} />
       <Replaces />
       <HowItWorks />
@@ -93,9 +107,11 @@ function ScrollProgress() {
 }
 
 /* ---------------- GLOBAL SCROLL-LINKED BACKDROP ---------------- */
-function GlobalBackdrop({ reduce }: { reduce: boolean }) {
+function GlobalBackdrop({ reduce, isMobile }: { reduce: boolean; isMobile: boolean }) {
   const { scrollYProgress } = useScroll();
-  const smooth = useSpring(scrollYProgress, { stiffness: 90, damping: 30, mass: 0.5 });
+  // Skip the spring on mobile — raw scroll is smooth enough and avoids a per-frame physics tick.
+  const springed = useSpring(scrollYProgress, { stiffness: 90, damping: 30, mass: 0.5 });
+  const smooth = isMobile ? scrollYProgress : springed;
   const orbAY = useTransform(smooth, [0, 1], ["-8%", "42%"]);
   const orbBY = useTransform(smooth, [0, 1], ["6%", "-36%"]);
   const orbCY = useTransform(smooth, [0, 1], ["0%", "24%"]);
@@ -104,12 +120,29 @@ function GlobalBackdrop({ reduce }: { reduce: boolean }) {
   const gridY = useTransform(smooth, [0, 1], ["0%", "18%"]);
   const gridOpacity = useTransform(smooth, [0, 0.25, 0.75, 1], [0, 0.35, 0.35, 0.1]);
   const hue = useTransform(smooth, [0, 0.5, 1], [0, 8, -6]);
+  const orbAFilter = useTransform(hue, (h) => `hue-rotate(${h}deg) blur(160px)`);
   if (reduce) return null;
+  // Mobile: keep only two orbs with smaller blur radius; drop the animated grid
+  // and hue-rotate filter (both are heavy GPU work at fullscreen size on phones).
+  if (isMobile) {
+    return (
+      <div aria-hidden className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+        <motion.div
+          className="absolute -left-24 top-[15vh] h-[55vh] w-[55vh] rounded-full bg-jade/[0.09] blur-[90px] will-change-transform"
+          style={{ y: orbAY }}
+        />
+        <motion.div
+          className="absolute -right-20 top-[70vh] h-[50vh] w-[50vh] rounded-full bg-gold/[0.07] blur-[90px] will-change-transform"
+          style={{ y: orbBY }}
+        />
+      </div>
+    );
+  }
   return (
     <div aria-hidden className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
       <motion.div
         className="absolute -left-40 top-[10vh] h-[70vh] w-[70vh] rounded-full bg-jade/[0.10] blur-[160px] will-change-transform"
-        style={{ y: orbAY, x: orbAX, filter: useTransform(hue, (h) => `hue-rotate(${h}deg) blur(160px)`) }}
+        style={{ y: orbAY, x: orbAX, filter: orbAFilter }}
       />
       <motion.div
         className="absolute -right-32 top-[55vh] h-[60vh] w-[60vh] rounded-full bg-gold/[0.09] blur-[160px] will-change-transform"
@@ -150,12 +183,16 @@ function Parallax({
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotion();
+  const isMobile = useIsMobile();
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start end", "end start"],
   });
-  const raw = useTransform(scrollYProgress, [0, 1], [speed, -speed]);
-  const y = useSpring(raw, { stiffness: 110, damping: 26, mass: 0.35 });
+  // Halve the travel on mobile (less pixel area re-composited) and skip the spring.
+  const effective = isMobile ? speed * 0.5 : speed;
+  const raw = useTransform(scrollYProgress, [0, 1], [effective, -effective]);
+  const springY = useSpring(raw, { stiffness: 110, damping: 26, mass: 0.35 });
+  const y = isMobile ? raw : springY;
   if (reduce) {
     return <div ref={ref} className={className}>{children}</div>;
   }
@@ -248,7 +285,7 @@ function Nav() {
 }
 
 /* ---------------- HERO — 3D layered parallax scene ---------------- */
-function Hero({ reduce }: { reduce: boolean }) {
+function Hero({ reduce, isMobile }: { reduce: boolean; isMobile: boolean }) {
   const sectionRef = useRef<HTMLElement>(null);
 
   const { scrollYProgress } = useScroll({
@@ -272,15 +309,28 @@ function Hero({ reduce }: { reduce: boolean }) {
   // Mouse parallax
   const [mouse, setMouse] = useState({ x: 0, y: 0 });
   useEffect(() => {
-    if (reduce) return;
+    // Mouse parallax is desktop-only — touch devices dispatch synthetic
+    // mousemoves on tap and it forces layer re-composites for no visual gain.
+    if (reduce || isMobile) return;
+    let raf = 0;
+    let pending: { x: number; y: number } | null = null;
     const onMove = (e: MouseEvent) => {
-      const x = (e.clientX / window.innerWidth - 0.5) * 2;
-      const y = (e.clientY / window.innerHeight - 0.5) * 2;
-      setMouse({ x, y });
+      pending = {
+        x: (e.clientX / window.innerWidth - 0.5) * 2,
+        y: (e.clientY / window.innerHeight - 0.5) * 2,
+      };
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        if (pending) setMouse(pending);
+      });
     };
-    window.addEventListener("mousemove", onMove);
-    return () => window.removeEventListener("mousemove", onMove);
-  }, [reduce]);
+    window.addEventListener("mousemove", onMove, { passive: true });
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, [reduce, isMobile]);
 
   return (
     <section
