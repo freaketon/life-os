@@ -12,7 +12,7 @@ const LINKS = {
   STRIPE_BUILD_LINK: "https://buy.stripe.com/4gMbJ2a8B2R60qw15w7Zu01",
   STRIPE_PRIVATE_OS_LINK: "https://buy.stripe.com/eVq28s4OhfDS4GM4hI7Zu02",
   STRIPE_MONTHLY_SUPPORT_LINK: "https://buy.stripe.com/dRmbJ294xcrG1uAeWm7Zu03",
-  BOOKING_CALL_LINK: "#BOOKING_CALL_LINK",
+  BOOKING_CALL_LINK: "https://calendar.app.google/B7jN2x8bw55wXyLY7",
 };
 
 // TODO: Replace with your final CDN video URLs if desired.
