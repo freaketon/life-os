@@ -168,9 +168,15 @@ function Hero({ reduce }: { reduce: boolean }) {
       const duration = videoRef.current.duration;
       if (!isFinite(duration) || duration <= 0) return;
       targetTimeRef.current = progress * duration;
-      // Smooth interpolation
+      // Smooth interpolation, but snap to endpoints so the final frame (brain rotation) actually lands
       const diff = targetTimeRef.current - currentTimeRef.current;
-      currentTimeRef.current += diff * 0.12;
+      if (progress >= 0.995) {
+        currentTimeRef.current = duration;
+      } else if (progress <= 0.005) {
+        currentTimeRef.current = 0;
+      } else {
+        currentTimeRef.current += diff * 0.12;
+      }
       try {
         videoRef.current.currentTime = currentTimeRef.current;
       } catch { /* seek errors ignored */ }
