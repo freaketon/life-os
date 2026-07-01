@@ -677,22 +677,25 @@ function Replaces() {
     <section className="relative py-24 md:py-32 px-6">
       <div className="mx-auto max-w-7xl">
         <div className="mb-16 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
-          <Reveal dir="left" distance={100}>
-            <div className="mb-4 flex items-center gap-3 text-xs uppercase tracking-[0.28em] text-muted-foreground">
-              <span className="h-px w-10 bg-jade/60" />
-              What this replaces
-            </div>
-            <h2 className="font-display text-balance text-[clamp(2rem,4.5vw,3.5rem)] leading-[1.05]">
-              Four things your life <br className="hidden md:block" />
-              <span className="italic text-muted-foreground">was never meant to run on.</span>
-            </h2>
-          </Reveal>
+          <Parallax speed={50}>
+            <Reveal dir="left" distance={100}>
+              <div className="mb-4 flex items-center gap-3 text-xs uppercase tracking-[0.28em] text-muted-foreground">
+                <span className="h-px w-10 bg-jade/60" />
+                What this replaces
+              </div>
+              <h2 className="font-display text-balance text-[clamp(2rem,4.5vw,3.5rem)] leading-[1.05]">
+                Four things your life <br className="hidden md:block" />
+                <span className="italic text-muted-foreground">was never meant to run on.</span>
+              </h2>
+            </Reveal>
+          </Parallax>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {items.map((item, i) => (
-            <TiltCard key={item.title} index={i}>
-              <div className="glass-panel p-8 h-full flex flex-col gap-6 relative overflow-hidden group">
+            <Parallax key={item.title} speed={i % 2 === 0 ? 40 : -30}>
+              <TiltCard index={i}>
+                <div className="glass-panel p-8 h-full flex flex-col gap-6 relative overflow-hidden group">
                 <div className="absolute -top-16 -right-16 h-40 w-40 rounded-full bg-jade/5 blur-2xl group-hover:bg-jade/10 transition" />
                 <div className="flex items-center justify-between">
                   <span className="font-mono text-xs text-muted-foreground/60">0{i + 1}</span>
