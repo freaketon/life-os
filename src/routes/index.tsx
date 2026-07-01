@@ -632,10 +632,10 @@ function TiltCard({ children, index }: { children: ReactNode; index: number }) {
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-50px" }}
-      transition={{ duration: 0.8, delay: index * 0.1, ease: [0.22, 1, 0.36, 1] }}
+      initial={{ opacity: 0, y: 40, x: index % 2 === 0 ? -60 : 60, rotate: index % 2 === 0 ? -3 : 3 }}
+      whileInView={{ opacity: 1, y: 0, x: 0, rotate: 0 }}
+      viewport={{ once: true, margin: "-60px" }}
+      transition={{ duration: 0.9, delay: index * 0.08, ease: [0.22, 1, 0.36, 1] }}
       onMouseMove={onMove}
       onMouseLeave={onLeave}
       style={{
