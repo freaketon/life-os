@@ -694,10 +694,10 @@ function HowItWorks() {
           {steps.map((s, i) => (
             <motion.article
               key={s.n}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-80px" }}
-              transition={{ duration: 0.9, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
+              initial={{ opacity: 0, y: 40, x: i % 2 === 0 ? -120 : 120 }}
+              whileInView={{ opacity: 1, y: 0, x: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 1, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
               className="glass-panel p-8 md:p-12 relative overflow-hidden group hover:border-jade/30 transition"
             >
               <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12">
