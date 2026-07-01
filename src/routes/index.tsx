@@ -376,28 +376,32 @@ function ArchitectureLayer({ mouse, reduce }: { mouse: { x: number; y: number };
             transition={{ duration: 1, delay: f.delay, ease: [0.22, 1, 0.36, 1] }}
             className="absolute"
             style={{
-              top: f.top as string | undefined,
-              left: (f as { left?: string }).left,
-              right: (f as { right?: string }).right,
-              bottom: (f as { bottom?: string }).bottom,
+              top: f.top,
+              left: f.left,
+              right: f.right,
+              bottom: f.bottom,
               transform: `translate3d(${px}px, ${py}px, 0)`,
               transition: "transform 400ms cubic-bezier(0.22,1,0.36,1)",
             }}
           >
             <div
               className={`glass-panel px-4 py-3 flex items-center gap-3 ${
-                (f as { accent?: boolean }).accent ? "border-jade/40 shadow-[0_0_40px_-10px_rgba(80,220,160,0.35)]" : ""
+                f.accent ? "border-jade/40 shadow-[0_0_40px_-10px_rgba(80,220,160,0.35)]" : ""
               }`}
             >
               <span
                 className={`h-1.5 w-1.5 rounded-full ${
-                  (f as { accent?: boolean }).accent ? "bg-jade animate-pulse-node" : "bg-foreground/40"
+                  f.accent ? "bg-jade animate-pulse-node" : "bg-foreground/40"
                 }`}
               />
               <span className="text-xs uppercase tracking-[0.2em] text-foreground/85">{f.label}</span>
             </div>
           </motion.div>
         );
+      })}
+
+      {/* AI nodes */}
+      {[...Array(6)].map((_, i) => (
       })}
 
       {/* AI nodes */}
