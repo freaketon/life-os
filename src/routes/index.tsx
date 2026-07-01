@@ -77,6 +77,50 @@ function LandingPage() {
   );
 }
 
+/* ---------------- REVEAL (scroll-driven directional entrance) ---------------- */
+type RevealDir = "left" | "right" | "up" | "down" | "scale";
+function Reveal({
+  children,
+  dir = "up",
+  delay = 0,
+  distance = 80,
+  duration = 1,
+  className,
+  once = true,
+}: {
+  children: ReactNode;
+  dir?: RevealDir;
+  delay?: number;
+  distance?: number;
+  duration?: number;
+  className?: string;
+  once?: boolean;
+}) {
+  const reduce = useReducedMotion();
+  const initial =
+    dir === "left"
+      ? { opacity: 0, x: -distance, y: 0 }
+      : dir === "right"
+      ? { opacity: 0, x: distance, y: 0 }
+      : dir === "down"
+      ? { opacity: 0, y: -distance, x: 0 }
+      : dir === "scale"
+      ? { opacity: 0, scale: 0.92 }
+      : { opacity: 0, y: distance, x: 0 };
+  if (reduce) return <div className={className}>{children}</div>;
+  return (
+    <motion.div
+      className={className}
+      initial={initial}
+      whileInView={{ opacity: 1, x: 0, y: 0, scale: 1 }}
+      viewport={{ once, margin: "-80px" }}
+      transition={{ duration, delay, ease: [0.22, 1, 0.36, 1] }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
 /* ---------------- NAV ---------------- */
 function Nav() {
   return (
