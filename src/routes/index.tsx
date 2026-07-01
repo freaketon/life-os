@@ -926,6 +926,7 @@ function Packages() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 items-stretch">
           {packages.map((p, i) => (
+            <Parallax key={p.name} speed={[50, -20, 30, -40][i] ?? 0}>
             <motion.div
               key={p.name}
               initial={{ opacity: 0, y: 80, scale: 0.9, rotate: i % 2 === 0 ? -2 : 2 }}
