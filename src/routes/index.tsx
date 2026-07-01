@@ -13,10 +13,6 @@ const LINKS = {
   BOOKING_CALL_LINK: "https://calendar.app.google/B7jN2x8bw55wXyLY7",
 };
 
-// TODO: Replace with your final CDN video URLs if desired.
-// Currently using uploaded assets: "video bg 1.mp4" and "video bg 2.mp4"
-const HERO_VIDEO_SRC = video1Asset.url;
-const MANIFESTO_VIDEO_SRC = video2Asset.url;
 
 export const Route = createFileRoute("/")({
   head: () => ({
