@@ -826,10 +826,10 @@ function Packages() {
           {packages.map((p, i) => (
             <motion.div
               key={p.name}
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-80px" }}
-              transition={{ duration: 0.9, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+              initial={{ opacity: 0, y: 80, scale: 0.9, rotate: i % 2 === 0 ? -2 : 2 }}
+              whileInView={{ opacity: 1, y: 0, scale: 1, rotate: 0 }}
+              viewport={{ once: true, margin: "-60px" }}
+              transition={{ duration: 0.9, delay: i * 0.12, ease: [0.22, 1, 0.36, 1] }}
               className={`relative flex flex-col p-8 md:p-10 rounded-2xl ${
                 p.featured
                   ? "glass-panel-strong border-jade/40 xl:-my-4 shadow-[0_40px_120px_-20px_rgba(80,220,160,0.25)]"
