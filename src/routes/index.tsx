@@ -749,7 +749,7 @@ function Packages() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 items-stretch">
           {packages.map((p, i) => (
             <motion.div
               key={p.name}
@@ -759,7 +759,7 @@ function Packages() {
               transition={{ duration: 0.9, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
               className={`relative flex flex-col p-8 md:p-10 rounded-2xl ${
                 p.featured
-                  ? "glass-panel-strong border-jade/40 lg:-my-4 shadow-[0_40px_120px_-20px_rgba(80,220,160,0.25)]"
+                  ? "glass-panel-strong border-jade/40 xl:-my-4 shadow-[0_40px_120px_-20px_rgba(80,220,160,0.25)]"
                   : "glass-panel"
               }`}
             >
