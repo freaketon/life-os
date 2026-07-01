@@ -321,13 +321,22 @@ function ArrowRight() {
 
 /* Floating architecture cards with mouse parallax */
 function ArchitectureLayer({ mouse, reduce }: { mouse: { x: number; y: number }; reduce: boolean }) {
-  const fragments = [
+  const fragments: Array<{
+    label: string;
+    top?: string;
+    left?: string;
+    right?: string;
+    bottom?: string;
+    depth: number;
+    delay: number;
+    accent?: boolean;
+  }> = [
     { label: "Memory", top: "18%", left: "8%", depth: 30, delay: 0.4 },
     { label: "Anxiety", top: "26%", right: "10%", depth: 45, delay: 0.6 },
     { label: "Guilt", bottom: "28%", left: "12%", depth: 25, delay: 0.8 },
     { label: "Adrenaline", bottom: "18%", right: "14%", depth: 50, delay: 1.0 },
     { label: "AI Architecture", top: "12%", left: "50%", depth: 15, delay: 1.2, accent: true },
-  ] as const;
+  ];
 
   return (
     <div className="pointer-events-none absolute inset-0 z-[5] hidden md:block">
