@@ -908,19 +908,21 @@ function Packages() {
   return (
     <section id="packages" className="relative py-28 md:py-40 px-6">
       <div className="mx-auto max-w-7xl">
-        <Reveal dir="left" distance={100} className="mb-16 max-w-3xl">
-          <div className="mb-4 flex items-center gap-3 text-xs uppercase tracking-[0.28em] text-muted-foreground">
-            <span className="h-px w-10 bg-jade/60" />
-            Packages
-          </div>
-          <h2 className="font-display text-balance text-[clamp(2rem,5vw,4rem)] leading-[1.02]">
-            Choose the level <span className="italic text-muted-foreground">that fits.</span>
-          </h2>
-          <p className="mt-6 text-lg leading-relaxed text-muted-foreground max-w-2xl">
-            Start with the map, build the core system, or apply for a private operating system
-            built around your full life.
-          </p>
-        </Reveal>
+        <Parallax speed={70} className="mb-16 max-w-3xl">
+          <Reveal dir="left" distance={100}>
+            <div className="mb-4 flex items-center gap-3 text-xs uppercase tracking-[0.28em] text-muted-foreground">
+              <span className="h-px w-10 bg-jade/60" />
+              Packages
+            </div>
+            <h2 className="font-display text-balance text-[clamp(2rem,5vw,4rem)] leading-[1.02]">
+              Choose the level <span className="italic text-muted-foreground">that fits.</span>
+            </h2>
+            <p className="mt-6 text-lg leading-relaxed text-muted-foreground max-w-2xl">
+              Start with the map, build the core system, or apply for a private operating system
+              built around your full life.
+            </p>
+          </Reveal>
+        </Parallax>
 
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 items-stretch">
           {packages.map((p, i) => (
