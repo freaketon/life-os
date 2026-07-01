@@ -971,7 +971,7 @@ function FAQ() {
               </div>
             );
           })}
-        </div>
+        </Reveal>
       </div>
     </section>
   );
