@@ -992,6 +992,7 @@ function Packages() {
                 </a>
               </div>
             </motion.div>
+            </Parallax>
           ))}
         </div>
 
