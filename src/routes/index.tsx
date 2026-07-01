@@ -115,25 +115,27 @@ function Nav() {
   );
 }
 
-/* ---------------- HERO with scroll-scrubbed video ---------------- */
+/* ---------------- HERO — 3D layered parallax scene ---------------- */
 function Hero({ reduce }: { reduce: boolean }) {
   const sectionRef = useRef<HTMLElement>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const rafRef = useRef<number | null>(null);
-  const targetTimeRef = useRef(0);
-  const currentTimeRef = useRef(0);
-  const [videoReady, setVideoReady] = useState(false);
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start start", "end start"],
   });
-  const overlayOpacity = useTransform(scrollYProgress, [0, 1], [0.55, 0.85]);
+  const overlayOpacity = useTransform(scrollYProgress, [0, 1], [0.35, 0.9]);
   const contentY = useTransform(scrollYProgress, [0, 1], [0, -80]);
   const contentOpacity = useTransform(scrollYProgress, [0, 0.6, 1], [1, 0.85, 0]);
-  // Scroll-driven video parallax: subtle vertical drift + zoom as user scrolls
-  const videoY = useTransform(scrollYProgress, [0, 1], ["0%", "12%"]);
-  const videoScale = useTransform(scrollYProgress, [0, 1], [1.08, 1.22]);
+
+  // Scroll-driven depth layers (parallax speeds increase toward foreground)
+  const layerBackY = useTransform(scrollYProgress, [0, 1], ["0%", "18%"]);
+  const layerBackScale = useTransform(scrollYProgress, [0, 1], [1.0, 1.15]);
+  const layerMidY = useTransform(scrollYProgress, [0, 1], ["0%", "35%"]);
+  const layerMidRotate = useTransform(scrollYProgress, [0, 1], [0, 12]);
+  const layerFrontY = useTransform(scrollYProgress, [0, 1], ["0%", "55%"]);
+  const gridSkew = useTransform(scrollYProgress, [0, 1], [0, -8]);
+  const ringRotate = useTransform(scrollYProgress, [0, 1], [0, 90]);
+  const ringRotateReverse = useTransform(scrollYProgress, [0, 1], [0, -60]);
 
   // Mouse parallax
   const [mouse, setMouse] = useState({ x: 0, y: 0 });
@@ -148,54 +150,6 @@ function Hero({ reduce }: { reduce: boolean }) {
     return () => window.removeEventListener("mousemove", onMove);
   }, [reduce]);
 
-  // Scroll-controlled video: map scroll progress to video.currentTime, smoothed via rAF
-  useEffect(() => {
-    if (reduce) return;
-    const video = videoRef.current;
-    const section = sectionRef.current;
-    if (!video || !section) return;
-
-    const handleMeta = () => setVideoReady(true);
-    video.addEventListener("loadedmetadata", handleMeta);
-    if (video.readyState >= 1) setVideoReady(true);
-
-    const update = () => {
-      if (!videoRef.current || !sectionRef.current) return;
-      const rect = sectionRef.current.getBoundingClientRect();
-      const vh = window.innerHeight;
-      // Progress across the pinned hero (section is 200vh so we get room)
-      const total = rect.height - vh;
-      const scrolled = Math.min(Math.max(-rect.top, 0), total);
-      const progress = total > 0 ? scrolled / total : 0;
-      const duration = videoRef.current.duration;
-      if (!isFinite(duration) || duration <= 0) return;
-      targetTimeRef.current = progress * duration;
-      // Smooth interpolation, but snap to endpoints so the final frame (brain rotation) actually lands
-      const diff = targetTimeRef.current - currentTimeRef.current;
-      if (progress >= 0.995) {
-        currentTimeRef.current = duration;
-      } else if (progress <= 0.005) {
-        currentTimeRef.current = 0;
-      } else {
-        currentTimeRef.current += diff * 0.12;
-      }
-      try {
-        videoRef.current.currentTime = currentTimeRef.current;
-      } catch { /* seek errors ignored */ }
-    };
-
-    const loop = () => {
-      update();
-      rafRef.current = requestAnimationFrame(loop);
-    };
-    rafRef.current = requestAnimationFrame(loop);
-
-    return () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      video.removeEventListener("loadedmetadata", handleMeta);
-    };
-  }, [reduce]);
-
   return (
     <section
       id="top"
@@ -203,55 +157,136 @@ function Hero({ reduce }: { reduce: boolean }) {
       className="relative"
       style={{ height: "200vh" }}
     >
-      <div className="sticky top-0 h-screen w-full overflow-hidden">
-        {/* Video background — scroll scrubs currentTime, mouse + scroll drive parallax transform */}
-        {!reduce ? (
+      <div
+        className="sticky top-0 h-screen w-full overflow-hidden"
+        style={{ perspective: "1400px", perspectiveOrigin: "50% 50%" }}
+      >
+        {/* Base gradient canvas */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(ellipse at 20% 30%, rgba(80,220,160,0.14), transparent 55%), radial-gradient(ellipse at 80% 70%, rgba(196,163,90,0.10), transparent 55%), #060809",
+          }}
+        />
+
+        {/* ── Layer 1 — deep gradient orbs (slowest) ─────────────── */}
+        <motion.div
+          className="absolute inset-0 will-change-transform"
+          style={{
+            y: layerBackY,
+            scale: layerBackScale,
+            x: reduce ? 0 : mouse.x * -8,
+            rotateY: reduce ? 0 : mouse.x * 1.5,
+            rotateX: reduce ? 0 : mouse.y * -1.5,
+            transformStyle: "preserve-3d",
+            transition: "transform 700ms cubic-bezier(0.22,1,0.36,1)",
+          }}
+        >
+          <div className="absolute -top-32 -left-24 h-[720px] w-[720px] rounded-full bg-jade/20 blur-[140px]" />
+          <div className="absolute -bottom-40 -right-24 h-[680px] w-[680px] rounded-full bg-gold/15 blur-[140px]" />
+          <div className="absolute top-1/3 left-1/2 h-[420px] w-[420px] -translate-x-1/2 rounded-full bg-jade/10 blur-[120px]" />
+        </motion.div>
+
+        {/* ── Layer 2 — perspective grid floor + rings (mid) ─────── */}
+        <motion.div
+          className="absolute inset-0 will-change-transform"
+          style={{
+            y: layerMidY,
+            x: reduce ? 0 : mouse.x * -22,
+            rotateY: reduce ? 0 : mouse.x * 4,
+            rotateX: reduce ? 0 : mouse.y * -4,
+            transformStyle: "preserve-3d",
+            transition: "transform 600ms cubic-bezier(0.22,1,0.36,1)",
+          }}
+        >
+          {/* Perspective grid floor */}
           <motion.div
-            className="absolute inset-0 h-full w-full will-change-transform"
+            className="absolute inset-x-0 bottom-0 h-[75%] opacity-[0.28]"
             style={{
-              y: videoY,
-              scale: videoScale,
-              x: mouse.x * -4,
-              rotateX: mouse.y * -1,
-              rotateY: mouse.x * 1,
-              transformPerspective: 1200,
-              transformOrigin: "right center",
-              transition: "transform 600ms cubic-bezier(0.22,1,0.36,1)",
-            }}
-          >
-            <video
-              ref={videoRef}
-              className="absolute inset-0 h-full w-full object-cover [object-position:85%_center] sm:[object-position:88%_center] md:[object-position:90%_center] lg:[object-position:95%_center] xl:[object-position:right_center]"
-              src={HERO_VIDEO_SRC}
-              muted
-              playsInline
-              preload="auto"
-            />
-          </motion.div>
-        ) : (
-          // Static fallback for reduced motion
-          <div
-            className="absolute inset-0 h-full w-full bg-cover bg-center"
-            style={{
+              rotate: layerMidRotate,
+              skewY: gridSkew,
+              transformOrigin: "50% 100%",
               backgroundImage:
-                "radial-gradient(ellipse at 30% 40%, rgba(80,220,160,0.15), transparent 60%), radial-gradient(ellipse at 70% 60%, rgba(196,163,90,0.1), transparent 60%), #070707",
+                "linear-gradient(rgba(80,220,160,0.55) 1px, transparent 1px), linear-gradient(90deg, rgba(80,220,160,0.35) 1px, transparent 1px)",
+              backgroundSize: "80px 80px",
+              maskImage:
+                "linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 40%, transparent 85%)",
+              WebkitMaskImage:
+                "linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 40%, transparent 85%)",
+              transform: "rotateX(62deg)",
+              transformStyle: "preserve-3d",
             }}
-            aria-hidden
           />
-        )}
+
+          {/* Concentric rings — center-right, evoke a system core */}
+          <motion.div
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+            style={{ rotate: ringRotate }}
+          >
+            <div className="relative h-[520px] w-[520px] md:h-[680px] md:w-[680px]">
+              <div className="absolute inset-0 rounded-full border border-jade/25" />
+              <div className="absolute inset-8 rounded-full border border-jade/15" />
+              <div className="absolute inset-20 rounded-full border border-gold/20" />
+              {/* Orbiting node */}
+              <div className="absolute left-1/2 top-0 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-jade shadow-[0_0_20px_4px_rgba(80,220,160,0.7)]" />
+            </div>
+          </motion.div>
+          <motion.div
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+            style={{ rotate: ringRotateReverse }}
+          >
+            <div className="relative h-[380px] w-[380px] md:h-[500px] md:w-[500px]">
+              <div className="absolute inset-0 rounded-full border border-gold/25 border-dashed" />
+              <div className="absolute right-0 top-1/2 h-1.5 w-1.5 -translate-y-1/2 translate-x-1/2 rounded-full bg-gold shadow-[0_0_16px_3px_rgba(196,163,90,0.7)]" />
+            </div>
+          </motion.div>
+        </motion.div>
+
+        {/* ── Layer 3 — foreground particles (fastest) ───────────── */}
+        <motion.div
+          className="pointer-events-none absolute inset-0 will-change-transform"
+          style={{
+            y: layerFrontY,
+            x: reduce ? 0 : mouse.x * -40,
+            transition: "transform 500ms cubic-bezier(0.22,1,0.36,1)",
+          }}
+        >
+          {[
+            { top: "18%", left: "12%", size: 3, color: "jade" },
+            { top: "32%", left: "78%", size: 2, color: "gold" },
+            { top: "62%", left: "22%", size: 2, color: "jade" },
+            { top: "72%", left: "68%", size: 3, color: "gold" },
+            { top: "44%", left: "88%", size: 2, color: "jade" },
+            { top: "82%", left: "44%", size: 2, color: "jade" },
+            { top: "22%", left: "56%", size: 2, color: "gold" },
+          ].map((p, i) => (
+            <div
+              key={i}
+              className={`absolute rounded-full ${
+                p.color === "jade" ? "bg-jade" : "bg-gold"
+              }`}
+              style={{
+                top: p.top,
+                left: p.left,
+                width: p.size,
+                height: p.size,
+                boxShadow:
+                  p.color === "jade"
+                    ? "0 0 12px 2px rgba(80,220,160,0.6)"
+                    : "0 0 12px 2px rgba(196,163,90,0.6)",
+                animation: `pulse-node ${3 + (i % 3)}s ease-in-out ${i * 0.4}s infinite`,
+              }}
+            />
+          ))}
+        </motion.div>
 
         {/* Cinematic overlays */}
         <motion.div
-          className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/40 to-background"
+          className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/30 to-background"
           style={{ opacity: overlayOpacity }}
         />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_20%,#070707_85%)]" />
-
-        {/* Ambient light beams */}
-        <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute -top-40 left-1/4 h-[600px] w-[600px] rounded-full bg-jade/10 blur-[120px] animate-drift" />
-          <div className="absolute bottom-0 right-1/4 h-[500px] w-[500px] rounded-full bg-gold/10 blur-[120px] animate-drift" style={{ animationDelay: "-6s" }} />
-        </div>
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_25%,#060809_88%)]" />
 
         {/* Floating architecture cards */}
         <ArchitectureLayer mouse={mouse} reduce={reduce} />
@@ -325,7 +360,7 @@ function Hero({ reduce }: { reduce: boolean }) {
 
           {/* Scroll cue */}
           <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-[10px] uppercase tracking-[0.3em] text-muted-foreground/60">
-            <span>{videoReady || reduce ? "Scroll to assemble" : "Loading system…"}</span>
+            <span>Scroll to assemble</span>
             <span className="h-10 w-px bg-gradient-to-b from-jade/60 to-transparent" />
           </div>
         </motion.div>
