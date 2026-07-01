@@ -707,6 +707,7 @@ function Replaces() {
                 </div>
               </div>
             </TiltCard>
+            </Parallax>
           ))}
         </div>
       </div>
