@@ -712,6 +712,24 @@ function Packages() {
       secondary: { label: "Book A Fit Call", href: LINKS.BOOKING_CALL_LINK },
       featured: false,
     },
+    {
+      name: "Monthly Support",
+      tag: "Ongoing Care",
+      price: "$1,500",
+      priceUnit: "USD / month",
+      desc: "Ongoing support for clients with an active AI operating system. Keeps the system useful as priorities, tools, and routines change.",
+      deliverables: [
+        "Monthly workflow review",
+        "Prompt refinement and tuning",
+        "Documentation updates",
+        "System adjustments as life shifts",
+        "Strategic guidance sessions",
+        "For active Carry-Less OS clients",
+      ],
+      primary: { label: "Activate Monthly Support", href: LINKS.STRIPE_MONTHLY_SUPPORT_LINK },
+      secondary: { label: "Book A Fit Call", href: LINKS.BOOKING_CALL_LINK },
+      featured: false,
+    },
   ];
 
   return (
