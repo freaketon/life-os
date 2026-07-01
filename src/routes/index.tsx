@@ -77,6 +77,50 @@ function LandingPage() {
   );
 }
 
+/* ---------------- REVEAL (scroll-driven directional entrance) ---------------- */
+type RevealDir = "left" | "right" | "up" | "down" | "scale";
+function Reveal({
+  children,
+  dir = "up",
+  delay = 0,
+  distance = 80,
+  duration = 1,
+  className,
+  once = true,
+}: {
+  children: ReactNode;
+  dir?: RevealDir;
+  delay?: number;
+  distance?: number;
+  duration?: number;
+  className?: string;
+  once?: boolean;
+}) {
+  const reduce = useReducedMotion();
+  const initial =
+    dir === "left"
+      ? { opacity: 0, x: -distance, y: 0 }
+      : dir === "right"
+      ? { opacity: 0, x: distance, y: 0 }
+      : dir === "down"
+      ? { opacity: 0, y: -distance, x: 0 }
+      : dir === "scale"
+      ? { opacity: 0, scale: 0.92 }
+      : { opacity: 0, y: distance, x: 0 };
+  if (reduce) return <div className={className}>{children}</div>;
+  return (
+    <motion.div
+      className={className}
+      initial={initial}
+      whileInView={{ opacity: 1, x: 0, y: 0, scale: 1 }}
+      viewport={{ once, margin: "-80px" }}
+      transition={{ duration, delay, ease: [0.22, 1, 0.36, 1] }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
 /* ---------------- NAV ---------------- */
 function Nav() {
   return (
@@ -489,11 +533,11 @@ function Manifesto({ reduce }: { reduce: boolean }) {
         </div>
 
         <motion.div
-          ref={ref}
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+          ref={ref}
           className="glass-panel-strong relative overflow-hidden p-10 md:p-20"
           style={{ boxShadow: "0 60px 160px -40px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.05)" }}
         >
@@ -539,7 +583,7 @@ function Replaces() {
     <section className="relative py-24 md:py-32 px-6">
       <div className="mx-auto max-w-7xl">
         <div className="mb-16 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
-          <div>
+          <Reveal dir="left" distance={100}>
             <div className="mb-4 flex items-center gap-3 text-xs uppercase tracking-[0.28em] text-muted-foreground">
               <span className="h-px w-10 bg-jade/60" />
               What this replaces
@@ -548,7 +592,7 @@ function Replaces() {
               Four things your life <br className="hidden md:block" />
               <span className="italic text-muted-foreground">was never meant to run on.</span>
             </h2>
-          </div>
+          </Reveal>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -588,10 +632,10 @@ function TiltCard({ children, index }: { children: ReactNode; index: number }) {
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-50px" }}
-      transition={{ duration: 0.8, delay: index * 0.1, ease: [0.22, 1, 0.36, 1] }}
+      initial={{ opacity: 0, y: 40, x: index % 2 === 0 ? -60 : 60, rotate: index % 2 === 0 ? -3 : 3 }}
+      whileInView={{ opacity: 1, y: 0, x: 0, rotate: 0 }}
+      viewport={{ once: true, margin: "-60px" }}
+      transition={{ duration: 0.9, delay: index * 0.08, ease: [0.22, 1, 0.36, 1] }}
       onMouseMove={onMove}
       onMouseLeave={onLeave}
       style={{
@@ -630,7 +674,7 @@ function HowItWorks() {
   return (
     <section id="how" className="relative py-28 md:py-40 px-6">
       <div className="mx-auto max-w-7xl">
-        <div className="mb-20 max-w-3xl">
+        <Reveal dir="right" distance={100} className="mb-20 max-w-3xl">
           <div className="mb-4 flex items-center gap-3 text-xs uppercase tracking-[0.28em] text-muted-foreground">
             <span className="h-px w-10 bg-gold/60" />
             How it works
@@ -644,16 +688,16 @@ function HowItWorks() {
             support. It is built around the actual way your life breaks, not around a generic
             productivity fantasy.
           </p>
-        </div>
+        </Reveal>
 
         <div className="space-y-6">
           {steps.map((s, i) => (
             <motion.article
               key={s.n}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-80px" }}
-              transition={{ duration: 0.9, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
+              initial={{ opacity: 0, y: 40, x: i % 2 === 0 ? -120 : 120 }}
+              whileInView={{ opacity: 1, y: 0, x: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 1, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
               className="glass-panel p-8 md:p-12 relative overflow-hidden group hover:border-jade/30 transition"
             >
               <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12">
@@ -764,7 +808,7 @@ function Packages() {
   return (
     <section id="packages" className="relative py-28 md:py-40 px-6">
       <div className="mx-auto max-w-7xl">
-        <div className="mb-16 max-w-3xl">
+        <Reveal dir="left" distance={100} className="mb-16 max-w-3xl">
           <div className="mb-4 flex items-center gap-3 text-xs uppercase tracking-[0.28em] text-muted-foreground">
             <span className="h-px w-10 bg-jade/60" />
             Packages
@@ -776,16 +820,16 @@ function Packages() {
             Start with the map, build the core system, or apply for a private operating system
             built around your full life.
           </p>
-        </div>
+        </Reveal>
 
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 items-stretch">
           {packages.map((p, i) => (
             <motion.div
               key={p.name}
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-80px" }}
-              transition={{ duration: 0.9, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+              initial={{ opacity: 0, y: 80, scale: 0.9, rotate: i % 2 === 0 ? -2 : 2 }}
+              whileInView={{ opacity: 1, y: 0, scale: 1, rotate: 0 }}
+              viewport={{ once: true, margin: "-60px" }}
+              transition={{ duration: 0.9, delay: i * 0.12, ease: [0.22, 1, 0.36, 1] }}
               className={`relative flex flex-col p-8 md:p-10 rounded-2xl ${
                 p.featured
                   ? "glass-panel-strong border-jade/40 xl:-my-4 shadow-[0_40px_120px_-20px_rgba(80,220,160,0.25)]"
@@ -874,7 +918,7 @@ function FAQ() {
   return (
     <section id="faq" className="relative py-28 md:py-40 px-6">
       <div className="mx-auto max-w-4xl">
-        <div className="mb-16">
+        <Reveal dir="right" distance={100} className="mb-16">
           <div className="mb-4 flex items-center gap-3 text-xs uppercase tracking-[0.28em] text-muted-foreground">
             <span className="h-px w-10 bg-gold/60" />
             Questions
@@ -882,9 +926,9 @@ function FAQ() {
           <h2 className="font-display text-balance text-[clamp(2rem,5vw,3.5rem)] leading-[1.05]">
             Answered <span className="italic text-muted-foreground">before you ask.</span>
           </h2>
-        </div>
+        </Reveal>
 
-        <div className="glass-panel divide-y divide-white/[0.06]">
+        <Reveal dir="up" distance={60} className="glass-panel divide-y divide-white/[0.06]">
           {items.map((item, i) => {
             const isOpen = open === i;
             return (
@@ -927,7 +971,7 @@ function FAQ() {
               </div>
             );
           })}
-        </div>
+        </Reveal>
       </div>
     </section>
   );
