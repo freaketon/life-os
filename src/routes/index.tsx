@@ -309,15 +309,28 @@ function Hero({ reduce, isMobile }: { reduce: boolean; isMobile: boolean }) {
   // Mouse parallax
   const [mouse, setMouse] = useState({ x: 0, y: 0 });
   useEffect(() => {
-    if (reduce) return;
+    // Mouse parallax is desktop-only — touch devices dispatch synthetic
+    // mousemoves on tap and it forces layer re-composites for no visual gain.
+    if (reduce || isMobile) return;
+    let raf = 0;
+    let pending: { x: number; y: number } | null = null;
     const onMove = (e: MouseEvent) => {
-      const x = (e.clientX / window.innerWidth - 0.5) * 2;
-      const y = (e.clientY / window.innerHeight - 0.5) * 2;
-      setMouse({ x, y });
+      pending = {
+        x: (e.clientX / window.innerWidth - 0.5) * 2,
+        y: (e.clientY / window.innerHeight - 0.5) * 2,
+      };
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        if (pending) setMouse(pending);
+      });
     };
-    window.addEventListener("mousemove", onMove);
-    return () => window.removeEventListener("mousemove", onMove);
-  }, [reduce]);
+    window.addEventListener("mousemove", onMove, { passive: true });
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, [reduce, isMobile]);
 
   return (
     <section
