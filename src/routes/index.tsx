@@ -129,6 +129,9 @@ function Hero({ reduce }: { reduce: boolean }) {
   const overlayOpacity = useTransform(scrollYProgress, [0, 1], [0.55, 0.85]);
   const contentY = useTransform(scrollYProgress, [0, 1], [0, -80]);
   const contentOpacity = useTransform(scrollYProgress, [0, 0.6, 1], [1, 0.85, 0]);
+  // Scroll-driven video parallax: subtle vertical drift + zoom as user scrolls
+  const videoY = useTransform(scrollYProgress, [0, 1], ["0%", "12%"]);
+  const videoScale = useTransform(scrollYProgress, [0, 1], [1.08, 1.22]);
 
   // Mouse parallax
   const [mouse, setMouse] = useState({ x: 0, y: 0 });
