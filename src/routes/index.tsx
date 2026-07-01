@@ -168,9 +168,15 @@ function Hero({ reduce }: { reduce: boolean }) {
       const duration = videoRef.current.duration;
       if (!isFinite(duration) || duration <= 0) return;
       targetTimeRef.current = progress * duration;
-      // Smooth interpolation
+      // Smooth interpolation, but snap to endpoints so the final frame (brain rotation) actually lands
       const diff = targetTimeRef.current - currentTimeRef.current;
-      currentTimeRef.current += diff * 0.12;
+      if (progress >= 0.995) {
+        currentTimeRef.current = duration;
+      } else if (progress <= 0.005) {
+        currentTimeRef.current = 0;
+      } else {
+        currentTimeRef.current += diff * 0.12;
+      }
       try {
         videoRef.current.currentTime = currentTimeRef.current;
       } catch { /* seek errors ignored */ }
@@ -203,7 +209,7 @@ function Hero({ reduce }: { reduce: boolean }) {
             style={{
               y: videoY,
               scale: videoScale,
-              x: mouse.x * -24,
+              x: mouse.x * -8,
               rotateX: mouse.y * -2,
               rotateY: mouse.x * 2,
               transformPerspective: 1200,
@@ -212,7 +218,7 @@ function Hero({ reduce }: { reduce: boolean }) {
           >
             <video
               ref={videoRef}
-              className="absolute inset-0 h-full w-full object-cover"
+              className="absolute inset-0 h-full w-full object-cover [object-position:85%_center] md:[object-position:80%_center]"
               src={HERO_VIDEO_SRC}
               muted
               playsInline
