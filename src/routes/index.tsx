@@ -400,9 +400,7 @@ function ArchitectureLayer({ mouse, reduce }: { mouse: { x: number; y: number };
         );
       })}
 
-      {/* AI nodes */}
-      {[...Array(6)].map((_, i) => (
-      })}
+
 
       {/* AI nodes */}
       {[...Array(6)].map((_, i) => (
