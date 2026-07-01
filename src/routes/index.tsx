@@ -11,6 +11,7 @@ const LINKS = {
   STRIPE_BLUEPRINT_LINK: "#STRIPE_BLUEPRINT_LINK",
   STRIPE_BUILD_LINK: "#STRIPE_BUILD_LINK",
   STRIPE_PRIVATE_OS_LINK: "#STRIPE_PRIVATE_OS_LINK",
+  STRIPE_MONTHLY_SUPPORT_LINK: "#STRIPE_MONTHLY_SUPPORT_LINK",
   BOOKING_CALL_LINK: "#BOOKING_CALL_LINK",
 };
 
@@ -55,6 +56,7 @@ export const Route = createFileRoute("/")({
             { "@type": "Offer", name: "Carry-Less Blueprint", price: "1500", priceCurrency: "USD" },
             { "@type": "Offer", name: "Build My System", price: "7500", priceCurrency: "USD" },
             { "@type": "Offer", name: "Private Operating System", price: "12000", priceCurrency: "USD" },
+            { "@type": "Offer", name: "Carry-Less OS Monthly Support", price: "1500", priceCurrency: "USD", priceSpecification: { "@type": "UnitPriceSpecification", price: "1500", priceCurrency: "USD", billingIncrement: 1, unitCode: "MON" } },
           ],
         }),
       },
@@ -710,6 +712,24 @@ function Packages() {
       secondary: { label: "Book A Fit Call", href: LINKS.BOOKING_CALL_LINK },
       featured: false,
     },
+    {
+      name: "Monthly Support",
+      tag: "Ongoing Care",
+      price: "$1,500",
+      priceUnit: "USD / month",
+      desc: "Ongoing support for clients with an active AI operating system. Keeps the system useful as priorities, tools, and routines change.",
+      deliverables: [
+        "Monthly workflow review",
+        "Prompt refinement and tuning",
+        "Documentation updates",
+        "System adjustments as life shifts",
+        "Strategic guidance sessions",
+        "For active Carry-Less OS clients",
+      ],
+      primary: { label: "Activate Monthly Support", href: LINKS.STRIPE_MONTHLY_SUPPORT_LINK },
+      secondary: { label: "Book A Fit Call", href: LINKS.BOOKING_CALL_LINK },
+      featured: false,
+    },
   ];
 
   return (
@@ -729,7 +749,7 @@ function Packages() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 items-stretch">
           {packages.map((p, i) => (
             <motion.div
               key={p.name}
@@ -739,7 +759,7 @@ function Packages() {
               transition={{ duration: 0.9, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
               className={`relative flex flex-col p-8 md:p-10 rounded-2xl ${
                 p.featured
-                  ? "glass-panel-strong border-jade/40 lg:-my-4 shadow-[0_40px_120px_-20px_rgba(80,220,160,0.25)]"
+                  ? "glass-panel-strong border-jade/40 xl:-my-4 shadow-[0_40px_120px_-20px_rgba(80,220,160,0.25)]"
                   : "glass-panel"
               }`}
             >
