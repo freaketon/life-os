@@ -808,7 +808,7 @@ function Packages() {
   return (
     <section id="packages" className="relative py-28 md:py-40 px-6">
       <div className="mx-auto max-w-7xl">
-        <div className="mb-16 max-w-3xl">
+        <Reveal dir="left" distance={100} className="mb-16 max-w-3xl">
           <div className="mb-4 flex items-center gap-3 text-xs uppercase tracking-[0.28em] text-muted-foreground">
             <span className="h-px w-10 bg-jade/60" />
             Packages
@@ -820,7 +820,7 @@ function Packages() {
             Start with the map, build the core system, or apply for a private operating system
             built around your full life.
           </p>
-        </div>
+        </Reveal>
 
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 items-stretch">
           {packages.map((p, i) => (
