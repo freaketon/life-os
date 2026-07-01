@@ -572,11 +572,11 @@ function ArchitectureLayer({ mouse, reduce }: { mouse: { x: number; y: number };
     delay: number;
     accent?: boolean;
   }> = [
-    { label: "Memory", top: "18%", left: "8%", depth: 30, delay: 0.4 },
-    { label: "Anxiety", top: "26%", right: "10%", depth: 45, delay: 0.6 },
-    { label: "Guilt", bottom: "28%", left: "12%", depth: 25, delay: 0.8 },
-    { label: "Adrenaline", bottom: "18%", right: "14%", depth: 50, delay: 1.0 },
-    { label: "AI Architecture", top: "12%", left: "50%", depth: 15, delay: 1.2, accent: true },
+    { label: "Memory", top: "22%", left: "6%", depth: 30, delay: 0.4 },
+    { label: "Anxiety", top: "18%", right: "8%", depth: 45, delay: 0.6 },
+    { label: "Guilt", bottom: "30%", left: "10%", depth: 25, delay: 0.8 },
+    { label: "Adrenaline", bottom: "22%", right: "12%", depth: 50, delay: 1.0 },
+    { label: "AI Architecture", top: "10%", right: "38%", depth: 15, delay: 1.2, accent: true },
   ];
 
   return (
