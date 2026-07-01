@@ -209,16 +209,17 @@ function Hero({ reduce }: { reduce: boolean }) {
             style={{
               y: videoY,
               scale: videoScale,
-              x: mouse.x * -8,
-              rotateX: mouse.y * -2,
-              rotateY: mouse.x * 2,
+              x: mouse.x * -4,
+              rotateX: mouse.y * -1,
+              rotateY: mouse.x * 1,
               transformPerspective: 1200,
+              transformOrigin: "right center",
               transition: "transform 600ms cubic-bezier(0.22,1,0.36,1)",
             }}
           >
             <video
               ref={videoRef}
-              className="absolute inset-0 h-full w-full object-cover [object-position:85%_center] md:[object-position:80%_center]"
+              className="absolute inset-0 h-full w-full object-cover [object-position:85%_center] sm:[object-position:88%_center] md:[object-position:90%_center] lg:[object-position:95%_center] xl:[object-position:right_center]"
               src={HERO_VIDEO_SRC}
               muted
               playsInline
