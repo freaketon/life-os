@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { motion, useReducedMotion, useScroll, useTransform, AnimatePresence } from "framer-motion";
+import { motion, useReducedMotion, useScroll, useSpring, useTransform, AnimatePresence, type MotionValue } from "framer-motion";
 
 // ============================================================
 // REPLACE THESE PLACEHOLDER LINKS BEFORE LAUNCH
