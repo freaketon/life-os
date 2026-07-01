@@ -674,7 +674,7 @@ function HowItWorks() {
   return (
     <section id="how" className="relative py-28 md:py-40 px-6">
       <div className="mx-auto max-w-7xl">
-        <div className="mb-20 max-w-3xl">
+        <Reveal dir="right" distance={100} className="mb-20 max-w-3xl">
           <div className="mb-4 flex items-center gap-3 text-xs uppercase tracking-[0.28em] text-muted-foreground">
             <span className="h-px w-10 bg-gold/60" />
             How it works
@@ -688,7 +688,7 @@ function HowItWorks() {
             support. It is built around the actual way your life breaks, not around a generic
             productivity fantasy.
           </p>
-        </div>
+        </Reveal>
 
         <div className="space-y-6">
           {steps.map((s, i) => (
