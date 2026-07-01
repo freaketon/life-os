@@ -800,7 +800,9 @@ function HowItWorks() {
             >
               <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12">
                 <div className="md:col-span-3 flex md:flex-col items-baseline md:items-start gap-4">
-                  <span className="font-display text-6xl md:text-7xl text-jade/80 leading-none">{s.n}</span>
+                  <Parallax speed={60} as="span" className="inline-block">
+                    <span className="font-display text-6xl md:text-7xl text-jade/80 leading-none">{s.n}</span>
+                  </Parallax>
                   <span className="h-px flex-1 md:w-16 md:flex-none bg-border" />
                 </div>
                 <div className="md:col-span-6">
