@@ -918,7 +918,7 @@ function FAQ() {
   return (
     <section id="faq" className="relative py-28 md:py-40 px-6">
       <div className="mx-auto max-w-4xl">
-        <div className="mb-16">
+        <Reveal dir="right" distance={100} className="mb-16">
           <div className="mb-4 flex items-center gap-3 text-xs uppercase tracking-[0.28em] text-muted-foreground">
             <span className="h-px w-10 bg-gold/60" />
             Questions
@@ -926,9 +926,9 @@ function FAQ() {
           <h2 className="font-display text-balance text-[clamp(2rem,5vw,3.5rem)] leading-[1.05]">
             Answered <span className="italic text-muted-foreground">before you ask.</span>
           </h2>
-        </div>
+        </Reveal>
 
-        <div className="glass-panel divide-y divide-white/[0.06]">
+        <Reveal dir="up" distance={60} className="glass-panel divide-y divide-white/[0.06]">
           {items.map((item, i) => {
             const isOpen = open === i;
             return (
