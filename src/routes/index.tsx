@@ -581,6 +581,23 @@ function ArchitectureLayer({ mouse, reduce }: { mouse: { x: number; y: number };
 
   return (
     <div className="pointer-events-none absolute inset-0 z-[5] hidden md:block">
+      {/* Operating-room HUD corner brackets */}
+      <div className="absolute inset-6 lg:inset-10">
+        <span className="absolute top-0 left-0 h-6 w-6 border-l border-t border-jade/50" />
+        <span className="absolute top-0 right-0 h-6 w-6 border-r border-t border-jade/50" />
+        <span className="absolute bottom-0 left-0 h-6 w-6 border-l border-b border-jade/50" />
+        <span className="absolute bottom-0 right-0 h-6 w-6 border-r border-b border-jade/50" />
+      </div>
+      {/* HUD reticle */}
+      <svg className="absolute left-1/2 top-1/2 h-40 w-40 -translate-x-1/2 -translate-y-1/2 opacity-20" viewBox="0 0 100 100" aria-hidden>
+        <circle cx="50" cy="50" r="30" fill="none" stroke="#C4A35A" strokeWidth="0.4" />
+        <circle cx="50" cy="50" r="46" fill="none" stroke="#50DCA0" strokeWidth="0.3" strokeDasharray="2 3" />
+        <line x1="50" y1="10" x2="50" y2="22" stroke="#50DCA0" strokeWidth="0.4" />
+        <line x1="50" y1="78" x2="50" y2="90" stroke="#50DCA0" strokeWidth="0.4" />
+        <line x1="10" y1="50" x2="22" y2="50" stroke="#50DCA0" strokeWidth="0.4" />
+        <line x1="78" y1="50" x2="90" y2="50" stroke="#50DCA0" strokeWidth="0.4" />
+      </svg>
+
       {/* Grid lines */}
       <svg className="absolute inset-0 h-full w-full opacity-[0.08]" xmlns="http://www.w3.org/2000/svg">
         <defs>
