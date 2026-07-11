@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { motion, useReducedMotion, useScroll, useSpring, useTransform, AnimatePresence, type MotionValue } from "framer-motion";
+import { motion, useReducedMotion, AnimatePresence } from "framer-motion";
 
 // ============================================================
 // REPLACE THESE PLACEHOLDER LINKS BEFORE LAUNCH
@@ -13,7 +13,6 @@ const LINKS = {
   BOOKING_CALL_LINK: "https://calendar.app.google/B7jN2x8bw55wXyLY7",
 };
 
-
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
@@ -21,12 +20,12 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "A private AI operating system buildout for founders, creators, neurodivergent professionals, and overloaded people who need their life to stop depending on memory, adrenaline, and open loops.",
+          "A private AI system that runs the parts of your life you keep forgetting, avoiding, or holding in your head. Built for founders, creators, and neurodivergent professionals.",
       },
-      { property: "og:title", content: "Your brain was never supposed to be the operating system." },
+      { property: "og:title", content: "Get your life out of your head." },
       {
         property: "og:description",
-        content: "Private Claude and Hermes-based AI operating systems built around your real life.",
+        content: "Private AI systems that carry the load your brain keeps carrying manually.",
       },
       { property: "og:url", content: "/" },
     ],
@@ -62,7 +61,6 @@ export const Route = createFileRoute("/")({
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
-    // Small viewport OR coarse pointer (phones/most tablets) → mobile.
     const mq = window.matchMedia("(max-width: 768px), (pointer: coarse)");
     const update = () => setIsMobile(mq.matches);
     update();
@@ -77,11 +75,10 @@ function LandingPage() {
   const isMobile = useIsMobile();
   return (
     <main className="relative min-h-screen bg-background text-foreground grain-bg overflow-x-clip">
-      <ScrollProgress />
-      <GlobalBackdrop reduce={!!reduce} isMobile={isMobile} />
+      <Backdrop />
       <Nav />
       <Hero reduce={!!reduce} isMobile={isMobile} />
-      <Manifesto reduce={!!reduce} />
+      <Manifesto />
       <Replaces />
       <HowItWorks />
       <Packages />
@@ -93,131 +90,25 @@ function LandingPage() {
   );
 }
 
-/* ---------------- SCROLL PROGRESS RAIL ---------------- */
-function ScrollProgress() {
-  const { scrollYProgress } = useScroll();
-  const scaleX = useSpring(scrollYProgress, { stiffness: 120, damping: 30, mass: 0.4 });
-  return (
-    <motion.div
-      aria-hidden
-      className="fixed left-0 right-0 top-0 z-[60] h-[2px] origin-left bg-gradient-to-r from-jade via-jade/70 to-gold"
-      style={{ scaleX, boxShadow: "0 0 18px rgba(80,220,160,0.55)" }}
-    />
-  );
-}
-
-/* ---------------- GLOBAL SCROLL-LINKED BACKDROP ---------------- */
-function GlobalBackdrop({ reduce, isMobile }: { reduce: boolean; isMobile: boolean }) {
-  const { scrollYProgress } = useScroll();
-  // Skip the spring on mobile — raw scroll is smooth enough and avoids a per-frame physics tick.
-  const springed = useSpring(scrollYProgress, { stiffness: 90, damping: 30, mass: 0.5 });
-  const smooth = isMobile ? scrollYProgress : springed;
-  const orbAY = useTransform(smooth, [0, 1], ["-8%", "42%"]);
-  const orbBY = useTransform(smooth, [0, 1], ["6%", "-36%"]);
-  const orbCY = useTransform(smooth, [0, 1], ["0%", "24%"]);
-  const orbAX = useTransform(smooth, [0, 1], ["-4%", "8%"]);
-  const orbBX = useTransform(smooth, [0, 1], ["3%", "-10%"]);
-  const gridY = useTransform(smooth, [0, 1], ["0%", "18%"]);
-  const gridOpacity = useTransform(smooth, [0, 0.25, 0.75, 1], [0, 0.35, 0.35, 0.1]);
-  const hue = useTransform(smooth, [0, 0.5, 1], [0, 8, -6]);
-  const orbAFilter = useTransform(hue, (h) => `hue-rotate(${h}deg) blur(160px)`);
-  if (reduce) return null;
-  // Mobile: keep only two orbs with smaller blur radius; drop the animated grid
-  // and hue-rotate filter (both are heavy GPU work at fullscreen size on phones).
-  if (isMobile) {
-    return (
-      <div aria-hidden className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
-        <motion.div
-          className="absolute -left-24 top-[15vh] h-[55vh] w-[55vh] rounded-full bg-jade/[0.09] blur-[90px] will-change-transform"
-          style={{ y: orbAY }}
-        />
-        <motion.div
-          className="absolute -right-20 top-[70vh] h-[50vh] w-[50vh] rounded-full bg-gold/[0.07] blur-[90px] will-change-transform"
-          style={{ y: orbBY }}
-        />
-      </div>
-    );
-  }
+/* ---------------- STATIC BACKDROP (no scroll listener) ---------------- */
+function Backdrop() {
   return (
     <div aria-hidden className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
-      <motion.div
-        className="absolute -left-40 top-[10vh] h-[70vh] w-[70vh] rounded-full bg-jade/[0.10] blur-[160px] will-change-transform"
-        style={{ y: orbAY, x: orbAX, filter: orbAFilter }}
-      />
-      <motion.div
-        className="absolute -right-32 top-[55vh] h-[60vh] w-[60vh] rounded-full bg-gold/[0.09] blur-[160px] will-change-transform"
-        style={{ y: orbBY, x: orbBX }}
-      />
-      <motion.div
-        className="absolute left-1/2 top-[120vh] -translate-x-1/2 h-[80vh] w-[80vh] rounded-full bg-jade/[0.06] blur-[180px] will-change-transform"
-        style={{ y: orbCY }}
-      />
-      <motion.div
-        className="absolute inset-x-0 top-0 h-[220vh] will-change-transform"
-        style={{
-          y: gridY,
-          opacity: gridOpacity,
-          backgroundImage:
-            "linear-gradient(rgba(80,220,160,0.14) 1px, transparent 1px), linear-gradient(90deg, rgba(196,163,90,0.10) 1px, transparent 1px)",
-          backgroundSize: "120px 120px",
-          maskImage: "radial-gradient(ellipse at 50% 40%, rgba(0,0,0,0.55) 0%, transparent 70%)",
-          WebkitMaskImage: "radial-gradient(ellipse at 50% 40%, rgba(0,0,0,0.55) 0%, transparent 70%)",
-        }}
-      />
+      <div className="absolute -left-24 top-[10vh] h-[55vh] w-[55vh] rounded-full bg-jade/[0.08] blur-[80px]" />
+      <div className="absolute -right-20 top-[60vh] h-[50vh] w-[50vh] rounded-full bg-gold/[0.06] blur-[80px]" />
     </div>
   );
 }
 
-/* ---------------- PARALLAX (scroll-linked depth wrapper) ---------------- */
-function Parallax({
-  children,
-  speed = 60,
-  className,
-  as = "div",
-}: {
-  children: ReactNode;
-  /** Positive values move up as user scrolls down (foreground feel). Use negative for background drift. */
-  speed?: number;
-  className?: string;
-  as?: "div" | "span";
-}) {
-  const ref = useRef<HTMLDivElement>(null);
-  const reduce = useReducedMotion();
-  const isMobile = useIsMobile();
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start end", "end start"],
-  });
-  // Halve the travel on mobile (less pixel area re-composited) and skip the spring.
-  const effective = isMobile ? speed * 0.5 : speed;
-  const raw = useTransform(scrollYProgress, [0, 1], [effective, -effective]);
-  const springY = useSpring(raw, { stiffness: 110, damping: 26, mass: 0.35 });
-  const y = isMobile ? raw : springY;
-  if (reduce) {
-    return <div ref={ref} className={className}>{children}</div>;
-  }
-  const Comp = as === "span" ? motion.span : motion.div;
-  return (
-    <Comp
-      ref={ref as never}
-      className={className}
-      style={{ y: y as MotionValue<number>, willChange: "transform" }}
-    >
-      {children}
-    </Comp>
-  );
-}
-
-/* ---------------- REVEAL (scroll-driven directional entrance) ---------------- */
-type RevealDir = "left" | "right" | "up" | "down" | "scale";
+/* ---------------- REVEAL (one-shot IntersectionObserver, no scroll listener) ---------------- */
+type RevealDir = "left" | "right" | "up" | "scale";
 function Reveal({
   children,
   dir = "up",
   delay = 0,
-  distance = 80,
-  duration = 1,
+  distance = 40,
+  duration = 0.7,
   className,
-  once = true,
 }: {
   children: ReactNode;
   dir?: RevealDir;
@@ -225,26 +116,23 @@ function Reveal({
   distance?: number;
   duration?: number;
   className?: string;
-  once?: boolean;
 }) {
   const reduce = useReducedMotion();
   const initial =
     dir === "left"
-      ? { opacity: 0, x: -distance, y: 0 }
+      ? { opacity: 0, x: -distance }
       : dir === "right"
-      ? { opacity: 0, x: distance, y: 0 }
-      : dir === "down"
-      ? { opacity: 0, y: -distance, x: 0 }
+      ? { opacity: 0, x: distance }
       : dir === "scale"
-      ? { opacity: 0, scale: 0.92 }
-      : { opacity: 0, y: distance, x: 0 };
+      ? { opacity: 0, scale: 0.96 }
+      : { opacity: 0, y: distance };
   if (reduce) return <div className={className}>{children}</div>;
   return (
     <motion.div
       className={className}
       initial={initial}
       whileInView={{ opacity: 1, x: 0, y: 0, scale: 1 }}
-      viewport={{ once, margin: "-80px" }}
+      viewport={{ once: true, margin: "-60px" }}
       transition={{ duration, delay, ease: [0.22, 1, 0.36, 1] }}
     >
       {children}
@@ -284,268 +172,148 @@ function Nav() {
   );
 }
 
-/* ---------------- HERO — 3D layered parallax scene ---------------- */
+/* ---------------- HERO — static 3D scene, no scroll scrubbing ---------------- */
 function Hero({ reduce, isMobile }: { reduce: boolean; isMobile: boolean }) {
-  const sectionRef = useRef<HTMLElement>(null);
-
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start start", "end start"],
-  });
-  const overlayOpacity = useTransform(scrollYProgress, [0, 1], [0.35, 0.9]);
-  const contentY = useTransform(scrollYProgress, [0, 1], [0, -80]);
-  const contentOpacity = useTransform(scrollYProgress, [0, 0.6, 1], [1, 0.85, 0]);
-
-  // Scroll-driven depth layers (parallax speeds increase toward foreground)
-  const layerBackY = useTransform(scrollYProgress, [0, 1], ["0%", "18%"]);
-  const layerBackScale = useTransform(scrollYProgress, [0, 1], [1.0, 1.15]);
-  const layerMidY = useTransform(scrollYProgress, [0, 1], ["0%", "35%"]);
-  const layerMidRotate = useTransform(scrollYProgress, [0, 1], [0, 12]);
-  const layerFrontY = useTransform(scrollYProgress, [0, 1], ["0%", "55%"]);
-  const gridSkew = useTransform(scrollYProgress, [0, 1], [0, -8]);
-  const ringRotate = useTransform(scrollYProgress, [0, 1], [0, 90]);
-  const ringRotateReverse = useTransform(scrollYProgress, [0, 1], [0, -60]);
-
-  // Mouse parallax
-  const [mouse, setMouse] = useState({ x: 0, y: 0 });
-  useEffect(() => {
-    // Mouse parallax is desktop-only — touch devices dispatch synthetic
-    // mousemoves on tap and it forces layer re-composites for no visual gain.
-    if (reduce || isMobile) return;
-    let raf = 0;
-    let pending: { x: number; y: number } | null = null;
-    const onMove = (e: MouseEvent) => {
-      pending = {
-        x: (e.clientX / window.innerWidth - 0.5) * 2,
-        y: (e.clientY / window.innerHeight - 0.5) * 2,
-      };
-      if (raf) return;
-      raf = requestAnimationFrame(() => {
-        raf = 0;
-        if (pending) setMouse(pending);
-      });
-    };
-    window.addEventListener("mousemove", onMove, { passive: true });
-    return () => {
-      window.removeEventListener("mousemove", onMove);
-      if (raf) cancelAnimationFrame(raf);
-    };
-  }, [reduce, isMobile]);
-
   return (
-    <section
-      id="top"
-      ref={sectionRef}
-      className="relative"
-      style={{ height: "200vh" }}
-    >
+    <section id="top" className="relative min-h-screen w-full overflow-hidden">
+      {/* Base gradient */}
       <div
-        className="sticky top-0 h-screen w-full overflow-hidden"
-        style={{ perspective: "1400px", perspectiveOrigin: "50% 50%" }}
-      >
-        {/* Base gradient canvas */}
+        className="absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(ellipse at 20% 30%, rgba(80,220,160,0.14), transparent 55%), radial-gradient(ellipse at 80% 70%, rgba(196,163,90,0.10), transparent 55%), #060809",
+        }}
+      />
+
+      {/* Static depth orbs */}
+      <div aria-hidden className="absolute inset-0">
+        <div className="absolute -top-32 -left-24 h-[560px] w-[560px] rounded-full bg-jade/15 blur-[100px]" />
+        <div className="absolute -bottom-40 -right-24 h-[520px] w-[520px] rounded-full bg-gold/10 blur-[100px]" />
+      </div>
+
+      {/* Static perspective grid (CSS only, no scroll transforms) */}
+      {!reduce && (
         <div
-          className="absolute inset-0"
+          aria-hidden
+          className="absolute inset-x-0 bottom-0 h-[70%] opacity-[0.22]"
           style={{
-            background:
-              "radial-gradient(ellipse at 20% 30%, rgba(80,220,160,0.14), transparent 55%), radial-gradient(ellipse at 80% 70%, rgba(196,163,90,0.10), transparent 55%), #060809",
+            backgroundImage:
+              "linear-gradient(rgba(80,220,160,0.55) 1px, transparent 1px), linear-gradient(90deg, rgba(80,220,160,0.35) 1px, transparent 1px)",
+            backgroundSize: "80px 80px",
+            maskImage:
+              "linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.5) 40%, transparent 85%)",
+            WebkitMaskImage:
+              "linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.5) 40%, transparent 85%)",
+            transform: "perspective(900px) rotateX(62deg)",
+            transformOrigin: "50% 100%",
           }}
         />
+      )}
 
-        {/* ── Layer 1 — deep gradient orbs (slowest) ─────────────── */}
-        <motion.div
-          className="absolute inset-0 will-change-transform"
-          style={{
-            y: layerBackY,
-            scale: layerBackScale,
-            x: reduce ? 0 : mouse.x * -8,
-            rotateY: reduce ? 0 : mouse.x * 1.5,
-            rotateX: reduce ? 0 : mouse.y * -1.5,
-            transformStyle: "preserve-3d",
-            transition: "transform 700ms cubic-bezier(0.22,1,0.36,1)",
-          }}
-        >
-          <div className="absolute -top-32 -left-24 h-[720px] w-[720px] rounded-full bg-jade/20 blur-[140px]" />
-          <div className="absolute -bottom-40 -right-24 h-[680px] w-[680px] rounded-full bg-gold/15 blur-[140px]" />
-          <div className="absolute top-1/3 left-1/2 h-[420px] w-[420px] -translate-x-1/2 rounded-full bg-jade/10 blur-[120px]" />
-        </motion.div>
-
-        {/* ── Layer 2 — perspective grid floor + rings (mid) ─────── */}
-        <motion.div
-          className="absolute inset-0 will-change-transform"
-          style={{
-            y: layerMidY,
-            x: reduce ? 0 : mouse.x * -22,
-            rotateY: reduce ? 0 : mouse.x * 4,
-            rotateX: reduce ? 0 : mouse.y * -4,
-            transformStyle: "preserve-3d",
-            transition: "transform 600ms cubic-bezier(0.22,1,0.36,1)",
-          }}
-        >
-          {/* Perspective grid floor */}
-          <motion.div
-            className="absolute inset-x-0 bottom-0 h-[75%] opacity-[0.28]"
-            style={{
-              rotate: layerMidRotate,
-              skewY: gridSkew,
-              transformOrigin: "50% 100%",
-              backgroundImage:
-                "linear-gradient(rgba(80,220,160,0.55) 1px, transparent 1px), linear-gradient(90deg, rgba(80,220,160,0.35) 1px, transparent 1px)",
-              backgroundSize: "80px 80px",
-              maskImage:
-                "linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 40%, transparent 85%)",
-              WebkitMaskImage:
-                "linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 40%, transparent 85%)",
-              transform: "rotateX(62deg)",
-              transformStyle: "preserve-3d",
-            }}
-          />
-
-          {/* Concentric rings — center-right, evoke a system core */}
-          <motion.div
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-            style={{ rotate: ringRotate }}
-          >
-            <div className="relative h-[520px] w-[520px] md:h-[680px] md:w-[680px]">
-              <div className="absolute inset-0 rounded-full border border-jade/25" />
-              <div className="absolute inset-8 rounded-full border border-jade/15" />
-              <div className="absolute inset-20 rounded-full border border-gold/20" />
-              {/* Orbiting node */}
-              <div className="absolute left-1/2 top-0 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-jade shadow-[0_0_20px_4px_rgba(80,220,160,0.7)]" />
-            </div>
-          </motion.div>
-          <motion.div
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-            style={{ rotate: ringRotateReverse }}
-          >
-            <div className="relative h-[380px] w-[380px] md:h-[500px] md:w-[500px]">
+      {/* Concentric rings — CSS-only slow spin, desktop only */}
+      {!reduce && !isMobile && (
+        <div aria-hidden className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+          <div className="relative h-[520px] w-[520px] md:h-[640px] md:w-[640px] animate-[spin_60s_linear_infinite]">
+            <div className="absolute inset-0 rounded-full border border-jade/25" />
+            <div className="absolute inset-8 rounded-full border border-jade/15" />
+            <div className="absolute inset-20 rounded-full border border-gold/20" />
+            <div className="absolute left-1/2 top-0 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-jade shadow-[0_0_20px_4px_rgba(80,220,160,0.7)]" />
+          </div>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="relative h-[380px] w-[380px] md:h-[460px] md:w-[460px] animate-[spin_90s_linear_infinite_reverse]">
               <div className="absolute inset-0 rounded-full border border-gold/25 border-dashed" />
               <div className="absolute right-0 top-1/2 h-1.5 w-1.5 -translate-y-1/2 translate-x-1/2 rounded-full bg-gold shadow-[0_0_16px_3px_rgba(196,163,90,0.7)]" />
             </div>
-          </motion.div>
-        </motion.div>
-
-        {/* ── Layer 3 — foreground particles (fastest) ───────────── */}
-        <motion.div
-          className="pointer-events-none absolute inset-0 will-change-transform"
-          style={{
-            y: layerFrontY,
-            x: reduce ? 0 : mouse.x * -40,
-            transition: "transform 500ms cubic-bezier(0.22,1,0.36,1)",
-          }}
-        >
-          {[
-            { top: "18%", left: "12%", size: 3, color: "jade" },
-            { top: "32%", left: "78%", size: 2, color: "gold" },
-            { top: "62%", left: "22%", size: 2, color: "jade" },
-            { top: "72%", left: "68%", size: 3, color: "gold" },
-            { top: "44%", left: "88%", size: 2, color: "jade" },
-            { top: "82%", left: "44%", size: 2, color: "jade" },
-            { top: "22%", left: "56%", size: 2, color: "gold" },
-          ].map((p, i) => (
-            <div
-              key={i}
-              className={`absolute rounded-full ${
-                p.color === "jade" ? "bg-jade" : "bg-gold"
-              }`}
-              style={{
-                top: p.top,
-                left: p.left,
-                width: p.size,
-                height: p.size,
-                boxShadow:
-                  p.color === "jade"
-                    ? "0 0 12px 2px rgba(80,220,160,0.6)"
-                    : "0 0 12px 2px rgba(196,163,90,0.6)",
-                animation: `pulse-node ${3 + (i % 3)}s ease-in-out ${i * 0.4}s infinite`,
-              }}
-            />
-          ))}
-        </motion.div>
-
-        {/* Cinematic overlays */}
-        <motion.div
-          className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/30 to-background"
-          style={{ opacity: overlayOpacity }}
-        />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_25%,#060809_88%)]" />
-
-        {/* Floating architecture cards */}
-        <ArchitectureLayer mouse={mouse} reduce={reduce} />
-
-        {/* Copy */}
-        <motion.div
-          style={{ y: contentY, opacity: contentOpacity }}
-          className="relative z-10 mx-auto flex h-full max-w-6xl flex-col justify-center px-6"
-        >
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-            className="flex items-center gap-3 text-xs uppercase tracking-[0.28em] text-muted-foreground/80 mb-8"
-          >
-            <span className="h-px w-10 bg-jade/60" />
-            Private AI Systems · Alejandro Arango
-          </motion.div>
-
-          <motion.h1
-            initial={{ opacity: 0, y: 32 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1.2, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-            className="font-display text-balance text-[clamp(2.5rem,7vw,6rem)] leading-[0.98] text-foreground"
-          >
-            Your brain was never <br className="hidden md:block" />
-            <span className="italic text-shimmer">supposed to be</span> the{" "}
-            <span className="text-jade">operating system.</span>
-          </motion.h1>
-
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.4 }}
-            className="mt-8 max-w-2xl text-balance text-lg md:text-xl leading-relaxed text-muted-foreground"
-          >
-            Private AI systems for founders, creators, neurodivergent professionals, and
-            overloaded people whose lives have been running on memory, adrenaline, guilt,
-            and open loops.
-          </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.6 }}
-            className="mt-10 flex flex-wrap items-center gap-4"
-          >
-            <a
-              href="#packages"
-              className="btn-jade hover:btn-jade-hover inline-flex items-center gap-2 rounded-full px-7 py-4 text-[15px]"
-            >
-              Choose your build
-              <ArrowRight />
-            </a>
-            <a
-              href={LINKS.BOOKING_CALL_LINK}
-              className="btn-ghost-gold inline-flex items-center gap-2 rounded-full px-7 py-4 text-[15px] hover:brightness-125"
-            >
-              Book a fit call
-            </a>
-          </motion.div>
-
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1, delay: 0.9 }}
-            className="mt-10 max-w-md text-sm text-muted-foreground/70 italic"
-          >
-            Private builds are limited because each system is built around a real life.
-          </motion.p>
-
-          {/* Scroll cue */}
-          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-[10px] uppercase tracking-[0.3em] text-muted-foreground/60">
-            <span>Scroll to assemble</span>
-            <span className="h-10 w-px bg-gradient-to-b from-jade/60 to-transparent" />
           </div>
+        </div>
+      )}
+
+      {/* HUD brackets (desktop only) */}
+      {!isMobile && (
+        <div aria-hidden className="pointer-events-none absolute inset-6 lg:inset-10 z-[5] hidden md:block">
+          <span className="absolute top-0 left-0 h-6 w-6 border-l border-t border-jade/50" />
+          <span className="absolute top-0 right-0 h-6 w-6 border-r border-t border-jade/50" />
+          <span className="absolute bottom-0 left-0 h-6 w-6 border-l border-b border-jade/50" />
+          <span className="absolute bottom-0 right-0 h-6 w-6 border-r border-b border-jade/50" />
+        </div>
+      )}
+
+      {/* Fade to page */}
+      <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-background" />
+
+      {/* Copy */}
+      <div className="relative z-10 mx-auto flex min-h-screen max-w-6xl flex-col justify-center px-6 py-24">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+          className="flex items-center gap-3 text-xs uppercase tracking-[0.28em] text-muted-foreground/80 mb-8"
+        >
+          <span className="h-px w-10 bg-jade/60" />
+          Private AI Systems · Alejandro Arango
         </motion.div>
+
+        <motion.h1
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.9, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+          className="font-display text-balance text-[clamp(2.5rem,7vw,6rem)] leading-[0.98] text-foreground"
+        >
+          Get your life <br className="hidden md:block" />
+          <span className="italic text-shimmer">out of your head.</span>
+        </motion.h1>
+
+        <motion.p
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.25 }}
+          className="mt-8 max-w-2xl text-balance text-lg md:text-xl leading-relaxed text-muted-foreground"
+        >
+          I build private AI systems that remember what you forget, handle what you
+          keep avoiding, and run the parts of your life your brain has been carrying
+          on memory, guilt, and adrenaline.
+        </motion.p>
+
+        <motion.ul
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.35 }}
+          className="mt-6 space-y-2 text-[15px] text-foreground/85"
+        >
+          <li className="flex items-start gap-3"><span className="mt-2 h-1 w-4 flex-shrink-0 bg-jade/70" /> You stop holding your to-do list in your head.</li>
+          <li className="flex items-start gap-3"><span className="mt-2 h-1 w-4 flex-shrink-0 bg-jade/70" /> You stop losing hours to inbox, calendar, and admin.</li>
+          <li className="flex items-start gap-3"><span className="mt-2 h-1 w-4 flex-shrink-0 bg-jade/70" /> You stop running your life on anxiety and last-minute effort.</li>
+        </motion.ul>
+
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.45 }}
+          className="mt-10 flex flex-wrap items-center gap-4"
+        >
+          <a
+            href="#packages"
+            className="btn-jade hover:btn-jade-hover inline-flex items-center gap-2 rounded-full px-7 py-4 text-[15px]"
+          >
+            See the packages
+            <ArrowRight />
+          </a>
+          <a
+            href={LINKS.BOOKING_CALL_LINK}
+            className="btn-ghost-gold inline-flex items-center gap-2 rounded-full px-7 py-4 text-[15px] hover:brightness-125"
+          >
+            Book a fit call
+          </a>
+        </motion.div>
+
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, delay: 0.6 }}
+          className="mt-10 max-w-md text-sm text-muted-foreground/70 italic"
+        >
+          Limited private builds. Each system is built around a real life.
+        </motion.p>
       </div>
     </section>
   );
@@ -560,131 +328,8 @@ function ArrowRight() {
   );
 }
 
-/* Floating architecture cards with mouse parallax */
-function ArchitectureLayer({ mouse, reduce }: { mouse: { x: number; y: number }; reduce: boolean }) {
-  const fragments: Array<{
-    label: string;
-    top?: string;
-    left?: string;
-    right?: string;
-    bottom?: string;
-    depth: number;
-    delay: number;
-    accent?: boolean;
-  }> = [
-    { label: "Memory", top: "22%", left: "6%", depth: 30, delay: 0.4 },
-    { label: "Anxiety", top: "18%", right: "8%", depth: 45, delay: 0.6 },
-    { label: "Guilt", bottom: "30%", left: "10%", depth: 25, delay: 0.8 },
-    { label: "Adrenaline", bottom: "22%", right: "12%", depth: 50, delay: 1.0 },
-    { label: "AI Architecture", top: "10%", right: "38%", depth: 15, delay: 1.2, accent: true },
-  ];
-
-  return (
-    <div className="pointer-events-none absolute inset-0 z-[5] hidden md:block">
-      {/* Operating-room HUD corner brackets */}
-      <div className="absolute inset-6 lg:inset-10">
-        <span className="absolute top-0 left-0 h-6 w-6 border-l border-t border-jade/50" />
-        <span className="absolute top-0 right-0 h-6 w-6 border-r border-t border-jade/50" />
-        <span className="absolute bottom-0 left-0 h-6 w-6 border-l border-b border-jade/50" />
-        <span className="absolute bottom-0 right-0 h-6 w-6 border-r border-b border-jade/50" />
-      </div>
-      {/* HUD reticle */}
-      <svg className="absolute left-1/2 top-1/2 h-40 w-40 -translate-x-1/2 -translate-y-1/2 opacity-20" viewBox="0 0 100 100" aria-hidden>
-        <circle cx="50" cy="50" r="30" fill="none" stroke="#C4A35A" strokeWidth="0.4" />
-        <circle cx="50" cy="50" r="46" fill="none" stroke="#50DCA0" strokeWidth="0.3" strokeDasharray="2 3" />
-        <line x1="50" y1="10" x2="50" y2="22" stroke="#50DCA0" strokeWidth="0.4" />
-        <line x1="50" y1="78" x2="50" y2="90" stroke="#50DCA0" strokeWidth="0.4" />
-        <line x1="10" y1="50" x2="22" y2="50" stroke="#50DCA0" strokeWidth="0.4" />
-        <line x1="78" y1="50" x2="90" y2="50" stroke="#50DCA0" strokeWidth="0.4" />
-      </svg>
-
-      {/* Grid lines */}
-      <svg className="absolute inset-0 h-full w-full opacity-[0.08]" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <pattern id="grid" width="80" height="80" patternUnits="userSpaceOnUse">
-            <path d="M 80 0 L 0 0 0 80" fill="none" stroke="rgba(245,240,235,0.5)" strokeWidth="0.5" />
-          </pattern>
-        </defs>
-        <rect width="100%" height="100%" fill="url(#grid)" />
-      </svg>
-
-      {/* Connecting jade lines (SVG) */}
-      <svg className="absolute inset-0 h-full w-full" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-        <defs>
-          <linearGradient id="jadeLine" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#50DCA0" stopOpacity="0" />
-            <stop offset="50%" stopColor="#50DCA0" stopOpacity="0.6" />
-            <stop offset="100%" stopColor="#50DCA0" stopOpacity="0" />
-          </linearGradient>
-        </defs>
-        <line x1="15%" y1="24%" x2="50%" y2="18%" stroke="url(#jadeLine)" strokeWidth="1" />
-        <line x1="88%" y1="30%" x2="52%" y2="18%" stroke="url(#jadeLine)" strokeWidth="1" />
-        <line x1="18%" y1="70%" x2="50%" y2="20%" stroke="url(#jadeLine)" strokeWidth="1" />
-        <line x1="82%" y1="80%" x2="52%" y2="20%" stroke="url(#jadeLine)" strokeWidth="1" />
-      </svg>
-
-      {fragments.map((f, i) => {
-        const px = reduce ? 0 : mouse.x * f.depth;
-        const py = reduce ? 0 : mouse.y * f.depth;
-        return (
-          <motion.div
-            key={f.label}
-            initial={{ opacity: 0, y: 20, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 1, delay: f.delay, ease: [0.22, 1, 0.36, 1] }}
-            className="absolute"
-            style={{
-              top: f.top,
-              left: f.left,
-              right: f.right,
-              bottom: f.bottom,
-              transform: `translate3d(${px}px, ${py}px, 0)`,
-              transition: "transform 400ms cubic-bezier(0.22,1,0.36,1)",
-            }}
-          >
-            <div
-              className={`glass-panel px-4 py-3 flex items-center gap-3 ${
-                f.accent ? "border-jade/40 shadow-[0_0_40px_-10px_rgba(80,220,160,0.35)]" : ""
-              }`}
-            >
-              <span
-                className={`h-1.5 w-1.5 rounded-full ${
-                  f.accent ? "bg-jade animate-pulse-node" : "bg-foreground/40"
-                }`}
-              />
-              <span className="text-xs uppercase tracking-[0.2em] text-foreground/85">{f.label}</span>
-            </div>
-          </motion.div>
-        );
-      })}
-
-
-
-      {/* AI nodes */}
-      {[...Array(6)].map((_, i) => (
-        <div
-          key={i}
-          className="absolute h-1 w-1 rounded-full bg-jade/70 animate-pulse-node"
-          style={{
-            top: `${20 + Math.sin(i) * 30 + 30}%`,
-            left: `${15 + i * 13}%`,
-            animationDelay: `${i * 0.4}s`,
-          }}
-        />
-      ))}
-    </div>
-  );
-}
-
 /* ---------------- MANIFESTO ---------------- */
-function Manifesto({ reduce }: { reduce: boolean }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start end", "end start"],
-  });
-  const lightX = useTransform(scrollYProgress, [0, 1], ["-20%", "120%"]);
-
+function Manifesto() {
   return (
     <section id="manifesto" className="relative py-32 md:py-48 px-6">
       <div className="mx-auto max-w-5xl">
@@ -693,40 +338,28 @@ function Manifesto({ reduce }: { reduce: boolean }) {
           Manifesto
         </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-          ref={ref}
+        <Reveal
+          dir="up"
+          distance={40}
+          duration={0.8}
           className="glass-panel-strong relative overflow-hidden p-10 md:p-20"
-          style={{ boxShadow: "0 60px 160px -40px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.05)" }}
         >
-          {/* Animated light sweep */}
-          {!reduce && (
-            <motion.div
-              aria-hidden
-              className="pointer-events-none absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-jade/[0.06] to-transparent blur-2xl"
-              style={{ left: lightX }}
-            />
-          )}
           <div className="relative space-y-8 font-display text-[clamp(1.5rem,3.2vw,2.5rem)] leading-[1.25] text-foreground/95">
-            <p>For years I used my nervous system as infrastructure.</p>
+            <p>For years my brain was doing the job of a system.</p>
             <ul className="space-y-2 text-[clamp(1.15rem,2vw,1.5rem)] font-sans text-muted-foreground not-italic">
-              <li><span className="text-foreground/90">Memory</span> as project management.</li>
-              <li><span className="text-foreground/90">Anxiety</span> as reminder system.</li>
-              <li><span className="text-foreground/90">Guilt</span> as calendar.</li>
-              <li><span className="text-foreground/90">Adrenaline</span> as execution plan.</li>
+              <li><span className="text-foreground/90">Memory</span> was my project manager.</li>
+              <li><span className="text-foreground/90">Anxiety</span> was my reminder app.</li>
+              <li><span className="text-foreground/90">Guilt</span> was my calendar.</li>
+              <li><span className="text-foreground/90">Adrenaline</span> was my execution plan.</li>
             </ul>
             <p className="italic text-muted-foreground">It worked until it did not.</p>
-            <p>Now I build the systems I wish existed when my life was too heavy to hold manually.</p>
-            <p className="text-muted-foreground/80">That is what this is.</p>
+            <p>Now I build the systems I wish I had back then, so the people I work with can put their life down.</p>
             <p className="pt-4">
-              Not AI to do <span className="italic text-gold">more.</span>
+              This is not AI to do <span className="italic text-gold">more.</span>
             </p>
-            <p className="text-jade">AI to carry less.</p>
+            <p className="text-jade">This is AI so you can carry less.</p>
           </div>
-        </motion.div>
+        </Reveal>
       </div>
     </section>
   );
@@ -735,82 +368,45 @@ function Manifesto({ reduce }: { reduce: boolean }) {
 /* ---------------- REPLACES ---------------- */
 function Replaces() {
   const items = [
-    { title: "Memory", copy: "Project management should not live inside your head." },
-    { title: "Anxiety", copy: "Your reminder system should not be your nervous system." },
-    { title: "Guilt", copy: "Your calendar should not be powered by shame." },
-    { title: "Adrenaline", copy: "Execution should not require emergency mode." },
+    { title: "Stop holding it all in your head", copy: "Your projects, tasks, and open loops live in the system. You get to close browser tabs and forget things on purpose." },
+    { title: "Stop being your own reminder app", copy: "The system remembers deadlines, follow-ups, birthdays, and the things you keep meaning to get to. You stop startling awake at 2am." },
+    { title: "Stop running your calendar on guilt", copy: "Your week gets planned around what actually matters, not what you feel worst about ignoring." },
+    { title: "Stop needing panic to execute", copy: "Work gets done in normal time, on normal days, without waiting for a deadline to force your hand." },
   ];
   return (
     <section className="relative py-24 md:py-32 px-6">
       <div className="mx-auto max-w-7xl">
         <div className="mb-16 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
-          <Parallax speed={50}>
-            <Reveal dir="left" distance={100}>
-              <div className="mb-4 flex items-center gap-3 text-xs uppercase tracking-[0.28em] text-muted-foreground">
-                <span className="h-px w-10 bg-jade/60" />
-                What this replaces
-              </div>
-              <h2 className="font-display text-balance text-[clamp(2rem,4.5vw,3.5rem)] leading-[1.05]">
-                Four things your life <br className="hidden md:block" />
-                <span className="italic text-muted-foreground">was never meant to run on.</span>
-              </h2>
-            </Reveal>
-          </Parallax>
+          <Reveal dir="left" distance={50}>
+            <div className="mb-4 flex items-center gap-3 text-xs uppercase tracking-[0.28em] text-muted-foreground">
+              <span className="h-px w-10 bg-jade/60" />
+              What changes
+            </div>
+            <h2 className="font-display text-balance text-[clamp(2rem,4.5vw,3.5rem)] leading-[1.05]">
+              Four things you stop <br className="hidden md:block" />
+              <span className="italic text-muted-foreground">doing manually.</span>
+            </h2>
+          </Reveal>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {items.map((item, i) => (
-            <Parallax key={item.title} speed={i % 2 === 0 ? 40 : -30}>
-              <TiltCard index={i}>
-                <div className="glass-panel p-8 h-full flex flex-col gap-6 relative overflow-hidden group">
-                <div className="absolute -top-16 -right-16 h-40 w-40 rounded-full bg-jade/5 blur-2xl group-hover:bg-jade/10 transition" />
+            <Reveal key={item.title} dir="up" distance={30} delay={i * 0.06}>
+              <div className="glass-panel p-8 h-full flex flex-col gap-6 relative overflow-hidden">
                 <div className="flex items-center justify-between">
                   <span className="font-mono text-xs text-muted-foreground/60">0{i + 1}</span>
-                  <span className="h-1.5 w-1.5 rounded-full bg-jade animate-pulse-node" style={{ animationDelay: `${i * 0.3}s` }} />
+                  <span className="h-1.5 w-1.5 rounded-full bg-jade" />
                 </div>
                 <div>
-                  <h3 className="font-display text-3xl text-foreground mb-3">{item.title}</h3>
+                  <h3 className="font-display text-2xl text-foreground mb-3 leading-tight">{item.title}</h3>
                   <p className="text-muted-foreground leading-relaxed text-[15px]">{item.copy}</p>
                 </div>
               </div>
-            </TiltCard>
-            </Parallax>
+            </Reveal>
           ))}
         </div>
       </div>
     </section>
-  );
-}
-
-function TiltCard({ children, index }: { children: ReactNode; index: number }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const reduce = useReducedMotion();
-  const [t, setT] = useState({ rx: 0, ry: 0 });
-  const onMove = (e: React.MouseEvent) => {
-    if (reduce || !ref.current) return;
-    const r = ref.current.getBoundingClientRect();
-    const x = (e.clientX - r.left) / r.width - 0.5;
-    const y = (e.clientY - r.top) / r.height - 0.5;
-    setT({ rx: -y * 8, ry: x * 8 });
-  };
-  const onLeave = () => setT({ rx: 0, ry: 0 });
-  return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 40, x: index % 2 === 0 ? -60 : 60, rotate: index % 2 === 0 ? -3 : 3 }}
-      whileInView={{ opacity: 1, y: 0, x: 0, rotate: 0 }}
-      viewport={{ once: true, margin: "-60px" }}
-      transition={{ duration: 0.9, delay: index * 0.08, ease: [0.22, 1, 0.36, 1] }}
-      onMouseMove={onMove}
-      onMouseLeave={onLeave}
-      style={{
-        transform: `perspective(1200px) rotateX(${t.rx}deg) rotateY(${t.ry}deg)`,
-        transition: "transform 300ms cubic-bezier(0.22,1,0.36,1)",
-        transformStyle: "preserve-3d",
-      }}
-    >
-      {children}
-    </motion.div>
   );
 }
 
@@ -819,76 +415,68 @@ function HowItWorks() {
   const steps = [
     {
       n: "01",
-      title: "Audit the load",
-      copy: "We map the invisible weight: recurring decisions, abandoned tasks, message anxiety, calendar pressure, household operations, creative work, business loops, and the parts of life your brain keeps manually holding.",
+      title: "We map what you are carrying",
+      copy: "In one working session I map the tasks, decisions, follow-ups, and open loops your brain is holding. You leave with a clear picture of the load, not a longer to-do list.",
       deliverables: ["Life and work systems audit", "Open-loop inventory", "Tool and account review"],
     },
     {
       n: "02",
-      title: "Design the OS",
-      copy: "We turn the mess into structure: inputs, routines, agents, prompts, automations, dashboards, and decision flows that give your life a cleaner operating layer.",
+      title: "I design a system that fits your life",
+      copy: "I turn the map into a plan: what your AI handles, what it reminds you of, what it drafts for you, and what stays yours. You approve it before anything gets built.",
       deliverables: ["AI workflow architecture", "Claude, ChatGPT, or Hermes-based setup", "Personal operating protocols"],
     },
     {
       n: "03",
-      title: "Build the machine",
-      copy: "The system gets built, tested, documented, and handed over so you can use it without needing to become an engineer or productivity monk.",
+      title: "I build it and hand it over",
+      copy: "You get a working system you can actually use, with documentation and a walkthrough. You do not need to become an engineer or a productivity nerd to run it.",
       deliverables: ["Implementation and testing", "Handoff documentation", "Optional monthly support"],
     },
   ];
   return (
     <section id="how" className="relative py-28 md:py-40 px-6">
       <div className="mx-auto max-w-7xl">
-        <Reveal dir="right" distance={100} className="mb-20 max-w-3xl">
+        <Reveal dir="right" distance={50} className="mb-20 max-w-3xl">
           <div className="mb-4 flex items-center gap-3 text-xs uppercase tracking-[0.28em] text-muted-foreground">
             <span className="h-px w-10 bg-gold/60" />
             How it works
           </div>
           <h2 className="font-display text-balance text-[clamp(2rem,5vw,4rem)] leading-[1.02]">
-            From scattered life fragments <br />
-            to <span className="italic text-jade">operating architecture.</span>
+            Three steps to a life <br />
+            that <span className="italic text-jade">runs itself.</span>
           </h2>
           <p className="mt-6 text-lg leading-relaxed text-muted-foreground max-w-2xl">
-            This is systems architecture, AI setup, workflow design, and personal operations
-            support. It is built around the actual way your life breaks, not around a generic
-            productivity fantasy.
+            This is not coaching. It is not therapy. It is a real system, built around how your
+            life actually breaks, so the parts that keep failing stop failing.
           </p>
         </Reveal>
 
         <div className="space-y-6">
           {steps.map((s, i) => (
-            <motion.article
-              key={s.n}
-              initial={{ opacity: 0, y: 40, x: i % 2 === 0 ? -120 : 120 }}
-              whileInView={{ opacity: 1, y: 0, x: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 1, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
-              className="glass-panel p-8 md:p-12 relative overflow-hidden group hover:border-jade/30 transition"
-            >
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12">
-                <div className="md:col-span-3 flex md:flex-col items-baseline md:items-start gap-4">
-                  <Parallax speed={60} as="span" className="inline-block">
+            <Reveal key={s.n} dir="up" distance={40} delay={i * 0.08}>
+              <article className="glass-panel p-8 md:p-12 relative overflow-hidden hover:border-jade/30 transition">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12">
+                  <div className="md:col-span-3 flex md:flex-col items-baseline md:items-start gap-4">
                     <span className="font-display text-6xl md:text-7xl text-jade/80 leading-none">{s.n}</span>
-                  </Parallax>
-                  <span className="h-px flex-1 md:w-16 md:flex-none bg-border" />
+                    <span className="h-px flex-1 md:w-16 md:flex-none bg-border" />
+                  </div>
+                  <div className="md:col-span-6">
+                    <h3 className="font-display text-3xl md:text-4xl mb-4 text-foreground">{s.title}</h3>
+                    <p className="text-muted-foreground leading-relaxed text-[15px] md:text-base">{s.copy}</p>
+                  </div>
+                  <div className="md:col-span-3">
+                    <p className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground/70 mb-4">Deliverables</p>
+                    <ul className="space-y-3">
+                      {s.deliverables.map((d) => (
+                        <li key={d} className="flex items-start gap-3 text-sm text-foreground/85">
+                          <span className="mt-1.5 h-1 w-4 flex-shrink-0 bg-jade/70" />
+                          <span>{d}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
-                <div className="md:col-span-6">
-                  <h3 className="font-display text-3xl md:text-4xl mb-4 text-foreground">{s.title}</h3>
-                  <p className="text-muted-foreground leading-relaxed text-[15px] md:text-base">{s.copy}</p>
-                </div>
-                <div className="md:col-span-3">
-                  <p className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground/70 mb-4">Deliverables</p>
-                  <ul className="space-y-3">
-                    {s.deliverables.map((d) => (
-                      <li key={d} className="flex items-start gap-3 text-sm text-foreground/85">
-                        <span className="mt-1.5 h-1 w-4 flex-shrink-0 bg-jade/70" />
-                        <span>{d}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </motion.article>
+              </article>
+            </Reveal>
           ))}
         </div>
       </div>
@@ -904,7 +492,7 @@ function Packages() {
       tag: "Blueprint",
       price: "$1,500",
       priceUnit: "USD",
-      desc: "The map before the build. Best if you need clarity, architecture, and a practical implementation plan before committing to a full system.",
+      desc: "You get a clear plan for the exact system your life needs, before you commit to building anything. Best if you want the map first.",
       deliverables: [
         "Personal systems audit",
         "Open-loop and load map",
@@ -921,11 +509,11 @@ function Packages() {
       tag: "Core Build",
       price: "$7,500",
       priceUnit: "USD",
-      desc: "The practical AI operating system buildout. Best if you already know your current life cannot keep running through memory and manual force.",
+      desc: "You get a working AI system, built around your life, in about 2 to 3 weeks. Best if you already know your brain cannot keep running the whole thing.",
       deliverables: [
         "Everything in Blueprint",
         "Claude, ChatGPT, or Hermes setup",
-        "Custom prompts and operating routines",
+        "Custom prompts and routines that fit your life",
         "Task, calendar, and message workflows",
         "Documentation and handoff session",
         "Usually built in 2 to 3 weeks",
@@ -939,7 +527,7 @@ function Packages() {
       tag: "Private OS",
       price: "$12,000+",
       priceUnit: "USD",
-      desc: "A deeper private build for complex lives, multiple roles, family operations, creative systems, business systems, or high cognitive load environments.",
+      desc: "You get a deeper build for a complex life: multiple roles, family, creative work, and business, running on one private AI system.",
       deliverables: [
         "Everything in Build",
         "Multi-role life architecture",
@@ -957,7 +545,7 @@ function Packages() {
       tag: "Ongoing Care",
       price: "$1,500",
       priceUnit: "USD / month",
-      desc: "Ongoing support for clients with an active AI operating system. Keeps the system useful as priorities, tools, and routines change.",
+      desc: "Your system stays useful as your life changes. For clients with an active Carry-Less OS who want the system to keep evolving.",
       deliverables: [
         "Monthly workflow review",
         "Prompt refinement and tuning",
@@ -975,97 +563,90 @@ function Packages() {
   return (
     <section id="packages" className="relative py-28 md:py-40 px-6">
       <div className="mx-auto max-w-7xl">
-        <Parallax speed={70} className="mb-16 max-w-3xl">
-          <Reveal dir="left" distance={100}>
-            <div className="mb-4 flex items-center gap-3 text-xs uppercase tracking-[0.28em] text-muted-foreground">
-              <span className="h-px w-10 bg-jade/60" />
-              Packages
-            </div>
-            <h2 className="font-display text-balance text-[clamp(2rem,5vw,4rem)] leading-[1.02]">
-              Choose the level <span className="italic text-muted-foreground">that fits.</span>
-            </h2>
-            <p className="mt-6 text-lg leading-relaxed text-muted-foreground max-w-2xl">
-              Start with the map, build the core system, or apply for a private operating system
-              built around your full life.
-            </p>
-          </Reveal>
-        </Parallax>
+        <Reveal dir="left" distance={50} className="mb-16 max-w-3xl">
+          <div className="mb-4 flex items-center gap-3 text-xs uppercase tracking-[0.28em] text-muted-foreground">
+            <span className="h-px w-10 bg-jade/60" />
+            Packages
+          </div>
+          <h2 className="font-display text-balance text-[clamp(2rem,5vw,4rem)] leading-[1.02]">
+            Pick where you want <span className="italic text-muted-foreground">to start.</span>
+          </h2>
+          <p className="mt-6 text-lg leading-relaxed text-muted-foreground max-w-2xl">
+            Start with a plan, build the core system, or apply for a full private build around
+            your whole life.
+          </p>
+        </Reveal>
 
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 items-stretch">
           {packages.map((p, i) => (
-            <Parallax key={p.name} speed={[50, -20, 30, -40][i] ?? 0}>
-            <motion.div
-              key={p.name}
-              initial={{ opacity: 0, y: 80, scale: 0.9, rotate: i % 2 === 0 ? -2 : 2 }}
-              whileInView={{ opacity: 1, y: 0, scale: 1, rotate: 0 }}
-              viewport={{ once: true, margin: "-60px" }}
-              transition={{ duration: 0.9, delay: i * 0.12, ease: [0.22, 1, 0.36, 1] }}
-              className={`relative flex flex-col p-8 md:p-10 rounded-2xl ${
-                p.featured
-                  ? "glass-panel-strong border-jade/40 xl:-my-4 shadow-[0_40px_120px_-20px_rgba(80,220,160,0.25)]"
-                  : "glass-panel"
-              }`}
-            >
-              {p.featured && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="inline-flex items-center gap-2 rounded-full bg-jade px-4 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-jade-foreground">
-                    Most chosen
-                  </span>
+            <Reveal key={p.name} dir="up" distance={40} delay={i * 0.08}>
+              <div
+                className={`relative flex flex-col h-full p-8 md:p-10 rounded-2xl ${
+                  p.featured
+                    ? "glass-panel-strong border-jade/40 shadow-[0_40px_120px_-20px_rgba(80,220,160,0.25)]"
+                    : "glass-panel"
+                }`}
+              >
+                {p.featured && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                    <span className="inline-flex items-center gap-2 rounded-full bg-jade px-4 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-jade-foreground">
+                      Most chosen
+                    </span>
+                  </div>
+                )}
+                <div className="flex items-start justify-between mb-6">
+                  <div>
+                    <p className="text-[10px] uppercase tracking-[0.28em] text-gold mb-3">{p.tag}</p>
+                    <h3 className="font-display text-3xl leading-tight text-foreground">{p.name}</h3>
+                  </div>
                 </div>
-              )}
-              <div className="flex items-start justify-between mb-6">
-                <div>
-                  <p className="text-[10px] uppercase tracking-[0.28em] text-gold mb-3">{p.tag}</p>
-                  <h3 className="font-display text-3xl leading-tight text-foreground">{p.name}</h3>
+
+                <div className="mb-6">
+                  <div className="flex items-baseline gap-2">
+                    <span className="font-display text-5xl text-foreground">{p.price}</span>
+                    <span className="text-sm text-muted-foreground">{p.priceUnit}</span>
+                  </div>
+                </div>
+
+                <p className="text-muted-foreground leading-relaxed text-[15px] mb-8">{p.desc}</p>
+
+                <div className="hairline mb-6" />
+
+                <ul className="space-y-3 mb-10 flex-1">
+                  {p.deliverables.map((d) => (
+                    <li key={d} className="flex items-start gap-3 text-sm text-foreground/85">
+                      <svg className="mt-1 h-3.5 w-3.5 flex-shrink-0 text-jade" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                      <span>{d}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="flex flex-col gap-3">
+                  <a
+                    href={p.primary.href}
+                    className={`inline-flex items-center justify-center gap-2 rounded-full px-6 py-3.5 text-sm font-semibold transition ${
+                      p.featured ? "btn-jade hover:btn-jade-hover" : "bg-foreground text-background hover:bg-foreground/90"
+                    }`}
+                  >
+                    {p.primary.label} <ArrowRight />
+                  </a>
+                  <a
+                    href={p.secondary.href}
+                    className="btn-ghost-gold inline-flex items-center justify-center rounded-full px-6 py-3.5 text-sm hover:brightness-125"
+                  >
+                    {p.secondary.label}
+                  </a>
                 </div>
               </div>
-
-              <div className="mb-6">
-                <div className="flex items-baseline gap-2">
-                  <span className="font-display text-5xl text-foreground">{p.price}</span>
-                  <span className="text-sm text-muted-foreground">{p.priceUnit}</span>
-                </div>
-              </div>
-
-              <p className="text-muted-foreground leading-relaxed text-[15px] mb-8">{p.desc}</p>
-
-              <div className="hairline mb-6" />
-
-              <ul className="space-y-3 mb-10 flex-1">
-                {p.deliverables.map((d) => (
-                  <li key={d} className="flex items-start gap-3 text-sm text-foreground/85">
-                    <svg className="mt-1 h-3.5 w-3.5 flex-shrink-0 text-jade" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                    <span>{d}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <div className="flex flex-col gap-3">
-                <a
-                  href={p.primary.href}
-                  className={`inline-flex items-center justify-center gap-2 rounded-full px-6 py-3.5 text-sm font-semibold transition ${
-                    p.featured ? "btn-jade hover:btn-jade-hover" : "bg-foreground text-background hover:bg-foreground/90"
-                  }`}
-                >
-                  {p.primary.label} <ArrowRight />
-                </a>
-                <a
-                  href={p.secondary.href}
-                  className="btn-ghost-gold inline-flex items-center justify-center rounded-full px-6 py-3.5 text-sm hover:brightness-125"
-                >
-                  {p.secondary.label}
-                </a>
-              </div>
-            </motion.div>
-            </Parallax>
+            </Reveal>
           ))}
         </div>
 
         <p className="mt-12 max-w-2xl text-sm text-muted-foreground/75 italic leading-relaxed">
-          Private builds are limited because each system is built around a real life. No
-          countdowns. No fake scarcity. Just the reality that deep custom work requires focus.
+          Private builds are limited because each one is built around a real life. No
+          countdowns. No fake scarcity. Just the reality that deep custom work takes focus.
         </p>
       </div>
     </section>
@@ -1075,21 +656,21 @@ function Packages() {
 /* ---------------- FAQ ---------------- */
 function FAQ() {
   const items = [
-    { q: "Is this therapy?", a: "No. This is not therapy, medical advice, or mental health treatment. It is systems architecture, AI setup, workflow design, and personal operations support." },
-    { q: "Do I need to be neurodivergent?", a: "No. But the system is especially useful for people with ADHD, autism, AuDHD, high cognitive load, complex roles, or lives with too many open loops." },
-    { q: "Do I need Claude or ChatGPT already?", a: "Not necessarily. We will decide what tools fit your situation. You will own your own accounts." },
-    { q: "Is software included?", a: "No. Software subscriptions, hosting, and third-party tools are billed separately and owned by you." },
+    { q: "Is this therapy?", a: "No. This is not therapy, medical advice, or mental health treatment. It is a real system I design and build for you." },
+    { q: "Do I need to be neurodivergent?", a: "No. It works especially well for people with ADHD, autism, AuDHD, or high cognitive load, but the system helps anyone whose life has too many open loops." },
+    { q: "Do I need Claude or ChatGPT already?", a: "No. We pick the right tools for your situation. You own your own accounts." },
+    { q: "Is software included?", a: "No. Software, hosting, and third-party tools are billed separately and owned by you." },
     { q: "Can you build it fully for me?", a: "Yes. That is the Private OS tier." },
-    { q: "Can I start smaller?", a: "Yes. Start with the Blueprint if you want the map before the build." },
-    { q: "How long does it take?", a: "Blueprint is usually delivered after the audit. Build usually takes 2 to 3 weeks. Private OS depends on complexity." },
-    { q: "What happens after the build?", a: "You can run it yourself, or continue with optional monthly support starting at $1,500 per month depending on the level of support needed." },
+    { q: "Can I start smaller?", a: "Yes. Start with the Blueprint if you want the plan before the build." },
+    { q: "How long does it take?", a: "Blueprint is delivered soon after the audit. Build is usually 2 to 3 weeks. Private OS depends on complexity." },
+    { q: "What happens after the build?", a: "You run it yourself, or you keep me on with Monthly Support at $1,500 per month." },
   ];
   const [open, setOpen] = useState<number | null>(0);
 
   return (
     <section id="faq" className="relative py-28 md:py-40 px-6">
       <div className="mx-auto max-w-4xl">
-        <Reveal dir="right" distance={100} className="mb-16">
+        <Reveal dir="right" distance={50} className="mb-16">
           <div className="mb-4 flex items-center gap-3 text-xs uppercase tracking-[0.28em] text-muted-foreground">
             <span className="h-px w-10 bg-gold/60" />
             Questions
@@ -1099,7 +680,7 @@ function FAQ() {
           </h2>
         </Reveal>
 
-        <Reveal dir="up" distance={60} className="glass-panel divide-y divide-white/[0.06]">
+        <Reveal dir="up" distance={40} className="glass-panel divide-y divide-white/[0.06]">
           {items.map((item, i) => {
             const isOpen = open === i;
             return (
@@ -1130,7 +711,7 @@ function FAQ() {
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: "auto", opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                      transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
                       className="overflow-hidden"
                     >
                       <div className="px-6 md:px-8 pb-7 text-muted-foreground leading-relaxed text-[15px] max-w-3xl">
@@ -1153,34 +734,23 @@ function FinalCTA() {
   return (
     <section className="relative py-28 md:py-40 px-6 overflow-hidden">
       <div className="absolute inset-0 -z-10">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[700px] w-[700px] rounded-full bg-jade/[0.06] blur-[140px]" />
-        <div className="absolute bottom-0 right-0 h-[400px] w-[400px] rounded-full bg-gold/[0.05] blur-[120px]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[500px] w-[500px] rounded-full bg-jade/[0.06] blur-[100px]" />
       </div>
       <div className="mx-auto max-w-5xl text-center">
-        <motion.h2
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-          className="font-display text-balance text-[clamp(2.2rem,6vw,5rem)] leading-[1.02]"
-        >
-          Your brain should not have to keep <br className="hidden md:block" />
-          <span className="italic text-jade">carrying the whole machine.</span>
-        </motion.h2>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 1, delay: 0.2 }}
-          className="mt-8 space-y-4 text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed"
-        >
-          <p>
-            If your life is running on memory, adrenaline, guilt, and too many open loops, the
-            answer is not more discipline.
-          </p>
-          <p className="text-foreground">The answer is architecture.</p>
-          <p className="text-sm uppercase tracking-[0.28em] text-muted-foreground/70 pt-4">Choose the level that fits.</p>
-        </motion.div>
+        <Reveal dir="up" distance={30}>
+          <h2 className="font-display text-balance text-[clamp(2.2rem,6vw,5rem)] leading-[1.02]">
+            Put your life down. <br className="hidden md:block" />
+            <span className="italic text-jade">Let the system carry it.</span>
+          </h2>
+          <div className="mt-8 space-y-4 text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            <p>
+              If your life is running on memory, guilt, and last-minute effort, more discipline
+              is not the fix.
+            </p>
+            <p className="text-foreground">A real system is.</p>
+            <p className="text-sm uppercase tracking-[0.28em] text-muted-foreground/70 pt-4">Pick where you want to start.</p>
+          </div>
+        </Reveal>
 
         <div className="mt-12 flex flex-wrap justify-center gap-3">
           <a href={LINKS.STRIPE_BLUEPRINT_LINK} className="btn-ghost-gold inline-flex items-center gap-2 rounded-full px-6 py-3.5 text-sm hover:brightness-125">
@@ -1217,7 +787,6 @@ function Footer() {
         </p>
         <div className="md:text-right text-xs text-muted-foreground/60">
           © {new Date().getFullYear()} ArangoRaw · Alejandro Arango
-          {/* TODO: Replace with your domain / hosting metadata / legal links */}
         </div>
       </div>
     </footer>
@@ -1249,4 +818,3 @@ function StickyMobileCTA() {
     </div>
   );
 }
-
