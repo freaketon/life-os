@@ -689,6 +689,7 @@ function Packages() {
 /* ---------------- FAQ ---------------- */
 function FAQ() {
   const items = [
+    { q: "What is the difference between the three levels and how do I know which one is for me?", a: "Blueprint is the plan: you want the map before you commit to building. The Install is the guided system installation: a defined process, a defined timeline, and live sessions where we wire the Carry-Less system into your real life on a proven framework. Private OS is a small number of fully bespoke builds per year: for complex individuals or companies whose life or operation is too specific to fit into a shared framework. Rule of thumb — if you want direction, Blueprint. If you want the system running in your life inside a few weeks, The Install. If nothing off the shelf will ever fit you, Private OS." },
     { q: "Is this therapy?", a: "No. This is not therapy, medical advice, or mental health treatment. It is a real system I design and build for you." },
     { q: "Do I need to be neurodivergent?", a: "No. It works especially well for people with ADHD, autism, AuDHD, or high cognitive load, but the system helps anyone whose life has too many open loops." },
     { q: "Do I need Claude or ChatGPT already?", a: "No. We pick the right tools for your situation. You own your own accounts." },
