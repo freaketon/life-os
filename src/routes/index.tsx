@@ -493,6 +493,7 @@ function Packages() {
       price: "$1,500",
       priceUnit: "USD",
       desc: "You get a clear plan for the exact system your life needs, before you commit to building anything. Best if you want the map first.",
+      outcome: "By the end you know exactly what to build, in what order, and can start acting on the plan the same week — with or without me.",
       deliverables: [
         "Personal systems audit",
         "Open-loop and load map",
@@ -505,20 +506,23 @@ function Packages() {
       featured: false,
     },
     {
-      name: "Build My System",
-      tag: "Core Build",
-      price: "$7,500",
+      name: "The Install",
+      tag: "System Install",
+      price: "$2,500",
       priceUnit: "USD",
-      desc: "You get a working AI system, built around your life, in about 2 to 3 weeks. Best if you already know your brain cannot keep running the whole thing.",
+      priceNote: "Founding cohort: $1,500",
+      desc: "A structured, guided installation of the Carry-Less system into your life. Defined process, defined timeline, live sessions with me in the room for the hard steps.",
+      outcome: "You leave the install window with a working Carry-Less system running your real life, and the documentation to keep extending it on your own.",
       deliverables: [
-        "Everything in Blueprint",
-        "Claude, ChatGPT, or Hermes setup",
-        "Custom prompts and routines that fit your life",
-        "Task, calendar, and message workflows",
-        "Documentation and handoff session",
-        "Usually built in 2 to 3 weeks",
+        { kind: "Templated framework, custom results", text: "Everything in Blueprint. The audit questionnaire and load-mapping framework are the product; the answers and priority map they produce are yours alone." },
+        { kind: "Templated", text: "The Carry-Less system core. The proven architecture: agent role definitions, SOUL file structure, prompt scaffolding, and operating routines — the same pattern the whole system runs on." },
+        { kind: "Custom", text: "Guided configuration of your instance. Your tools, your calendar, your roles, your actual life wired into the core during the install window." },
+        { kind: "Custom delivery, templated curriculum", text: "Live install sessions (cohort). Small-group working sessions across the install window where the hard configuration steps happen with me in the room." },
+        { kind: "Templated", text: "The install guide and documentation. Step-by-step written walkthrough of the full system, so you can rebuild, adjust, or extend it without me." },
+        { kind: "Custom", text: "Personal operating protocols. Your daily and weekly routines, tuned to your brain and your real schedule during configuration — not copied from a template." },
+        { kind: "Custom", text: "Handoff and 30-day adjustment window. One structured check-in after the install to fix what reality breaks." },
       ],
-      primary: { label: "Build My System", href: LINKS.STRIPE_BUILD_LINK },
+      primary: { label: "Join The Install", href: LINKS.STRIPE_BUILD_LINK },
       secondary: { label: "Book A Fit Call", href: LINKS.BOOKING_CALL_LINK },
       featured: true,
     },
@@ -527,34 +531,17 @@ function Packages() {
       tag: "Private OS",
       price: "$12,000+",
       priceUnit: "USD",
-      desc: "You get a deeper build for a complex life: multiple roles, family, creative work, and business, running on one private AI system.",
+      desc: "A small number of fully bespoke builds per year for complex individuals or companies. Every part designed around your specific life or operation, not a shared framework.",
+      outcome: "You get a private system architected end to end around your reality, delivered as a working operating layer you own outright.",
       deliverables: [
-        "Everything in Build",
-        "Multi-role life architecture",
+        "Everything in The Install, fully bespoke",
+        "Life or operation architecture from scratch",
         "Advanced agent and workflow design",
         "Custom dashboards and handoff assets",
         "Expanded integrations and testing",
-        "Scope based on complexity",
+        "Scope and timeline based on complexity",
       ],
       primary: { label: "Apply For Private OS", href: LINKS.STRIPE_PRIVATE_OS_LINK },
-      secondary: { label: "Book A Fit Call", href: LINKS.BOOKING_CALL_LINK },
-      featured: false,
-    },
-    {
-      name: "Monthly Support",
-      tag: "Ongoing Care",
-      price: "$1,500",
-      priceUnit: "USD / month",
-      desc: "Your system stays useful as your life changes. For clients with an active Carry-Less OS who want the system to keep evolving.",
-      deliverables: [
-        "Monthly workflow review",
-        "Prompt refinement and tuning",
-        "Documentation updates",
-        "System adjustments as life shifts",
-        "Strategic guidance sessions",
-        "For active Carry-Less OS clients",
-      ],
-      primary: { label: "Activate Monthly Support", href: LINKS.STRIPE_MONTHLY_SUPPORT_LINK },
       secondary: { label: "Book A Fit Call", href: LINKS.BOOKING_CALL_LINK },
       featured: false,
     },
@@ -572,12 +559,11 @@ function Packages() {
             Pick where you want <span className="italic text-muted-foreground">to start.</span>
           </h2>
           <p className="mt-6 text-lg leading-relaxed text-muted-foreground max-w-2xl">
-            Start with a plan, build the core system, or apply for a full private build around
-            your whole life.
+            Three ways in: get the plan, join the install, or apply for a fully private build.
           </p>
         </Reveal>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 items-stretch">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
           {packages.map((p, i) => (
             <Reveal key={p.name} dir="up" distance={40} delay={i * 0.08}>
               <div
@@ -606,21 +592,39 @@ function Packages() {
                     <span className="font-display text-5xl text-foreground">{p.price}</span>
                     <span className="text-sm text-muted-foreground">{p.priceUnit}</span>
                   </div>
+                  {p.priceNote && (
+                    <p className="mt-2 text-xs uppercase tracking-[0.22em] text-jade/90">{p.priceNote}</p>
+                  )}
                 </div>
 
-                <p className="text-muted-foreground leading-relaxed text-[15px] mb-8">{p.desc}</p>
+                <p className="text-muted-foreground leading-relaxed text-[15px] mb-4">{p.desc}</p>
+                <p className="text-foreground/90 leading-relaxed text-[15px] mb-8 border-l-2 border-jade/60 pl-4">
+                  {p.outcome}
+                </p>
 
                 <div className="hairline mb-6" />
 
                 <ul className="space-y-3 mb-10 flex-1">
-                  {p.deliverables.map((d) => (
-                    <li key={d} className="flex items-start gap-3 text-sm text-foreground/85">
-                      <svg className="mt-1 h-3.5 w-3.5 flex-shrink-0 text-jade" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="20 6 9 17 4 12" />
-                      </svg>
-                      <span>{d}</span>
-                    </li>
-                  ))}
+                  {p.deliverables.map((d, idx) => {
+                    const isObj = typeof d === "object";
+                    const text = isObj ? (d as any).text : (d as string);
+                    const kind = isObj ? (d as any).kind : null;
+                    return (
+                      <li key={idx} className="flex items-start gap-3 text-sm text-foreground/85">
+                        <svg className="mt-1 h-3.5 w-3.5 flex-shrink-0 text-jade" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                        <span>
+                          {kind && (
+                            <span className="mr-2 inline-block rounded-full border border-gold/40 px-2 py-0.5 text-[10px] uppercase tracking-[0.18em] text-gold/90 align-middle">
+                              {kind}
+                            </span>
+                          )}
+                          <span>{text}</span>
+                        </span>
+                      </li>
+                    );
+                  })}
                 </ul>
 
                 <div className="flex flex-col gap-3">
@@ -644,6 +648,35 @@ function Packages() {
           ))}
         </div>
 
+        {/* Monthly Support add-on strip */}
+        <Reveal dir="up" distance={30} delay={0.1}>
+          <div className="mt-10 glass-panel rounded-2xl p-6 md:p-8 flex flex-col md:flex-row md:items-center gap-6 md:gap-10">
+            <div className="flex-1">
+              <p className="text-[10px] uppercase tracking-[0.28em] text-gold mb-2">Add-on · Ongoing Care</p>
+              <h3 className="font-display text-2xl leading-tight text-foreground mb-2">
+                Monthly Support <span className="text-muted-foreground text-lg">— $1,500 / month</span>
+              </h3>
+              <p className="text-muted-foreground text-[15px] leading-relaxed">
+                Add ongoing support to any of the three tiers above. Monthly workflow review, prompt refinement, documentation updates, and system adjustments as your life and tools change.
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3 md:flex-shrink-0">
+              <a
+                href={LINKS.STRIPE_MONTHLY_SUPPORT_LINK}
+                className="inline-flex items-center justify-center gap-2 rounded-full px-6 py-3.5 text-sm font-semibold bg-foreground text-background hover:bg-foreground/90 transition"
+              >
+                Activate Monthly Support <ArrowRight />
+              </a>
+              <a
+                href={LINKS.BOOKING_CALL_LINK}
+                className="btn-ghost-gold inline-flex items-center justify-center rounded-full px-6 py-3.5 text-sm hover:brightness-125"
+              >
+                Ask A Question
+              </a>
+            </div>
+          </div>
+        </Reveal>
+
         <p className="mt-12 max-w-2xl text-sm text-muted-foreground/75 italic leading-relaxed">
           Private builds are limited because each one is built around a real life. No
           countdowns. No fake scarcity. Just the reality that deep custom work takes focus.
@@ -656,6 +689,7 @@ function Packages() {
 /* ---------------- FAQ ---------------- */
 function FAQ() {
   const items = [
+    { q: "What is the difference between the three levels and how do I know which one is for me?", a: "Blueprint is the plan: you want the map before you commit to building. The Install is the guided system installation: a defined process, a defined timeline, and live sessions where we wire the Carry-Less system into your real life on a proven framework. Private OS is a small number of fully bespoke builds per year: for complex individuals or companies whose life or operation is too specific to fit into a shared framework. Rule of thumb — if you want direction, Blueprint. If you want the system running in your life inside a few weeks, The Install. If nothing off the shelf will ever fit you, Private OS." },
     { q: "Is this therapy?", a: "No. This is not therapy, medical advice, or mental health treatment. It is a real system I design and build for you." },
     { q: "Do I need to be neurodivergent?", a: "No. It works especially well for people with ADHD, autism, AuDHD, or high cognitive load, but the system helps anyone whose life has too many open loops." },
     { q: "Do I need Claude or ChatGPT already?", a: "No. We pick the right tools for your situation. You own your own accounts." },
