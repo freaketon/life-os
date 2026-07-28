@@ -592,9 +592,6 @@ function Packages() {
                     <span className="font-display text-5xl text-foreground">{p.price}</span>
                     <span className="text-sm text-muted-foreground">{p.priceUnit}</span>
                   </div>
-                  {p.priceNote && (
-                    <p className="mt-2 text-xs uppercase tracking-[0.22em] text-jade/90">{p.priceNote}</p>
-                  )}
                 </div>
 
                 <p className="text-muted-foreground leading-relaxed text-[15px] mb-4">{p.desc}</p>
