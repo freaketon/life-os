@@ -519,7 +519,7 @@ function Packages() {
         "Your daily and weekly routines, tuned to how your brain works",
         "A plain written guide so you can change anything later without me",
         "A check-in 30 days after, to fix whatever real life breaks",
-        { text: "LifeOS AI access: 200 messages/mo included", kind: "AI" },
+        { text: "LifeOS AI access: 1 month included", kind: "AI" },
       ],
       primary: { label: "Join The Install", href: LINKS.STRIPE_BUILD_LINK },
       secondary: { label: "Book A Fit Call", href: LINKS.BOOKING_CALL_LINK },
@@ -539,7 +539,7 @@ function Packages() {
         "Custom dashboards and handoff assets",
         "Expanded integrations and testing",
         "Scope and timeline based on complexity",
-        { text: "LifeOS AI access: 500 messages/mo included", kind: "AI" },
+        { text: "LifeOS AI access: 1 month included", kind: "AI" },
       ],
       primary: { label: "Apply For Private OS", href: LINKS.STRIPE_PRIVATE_OS_LINK },
       secondary: { label: "Book A Fit Call", href: LINKS.BOOKING_CALL_LINK },
@@ -687,7 +687,7 @@ function Packages() {
 function FAQ() {
   const items = [
     { q: "What is the difference between the three levels and how do I know which one is for me?", a: "Blueprint is the plan: you want the map before you commit to building. The Install is the guided system installation: a defined process, a defined timeline, and live sessions where we wire the Carry-Less system into your real life on a proven framework. Private OS is a small number of fully bespoke builds per year: for complex individuals or companies whose life or operation is too specific to fit into a shared framework. Rule of thumb — if you want direction, Blueprint. If you want the system running in your life inside a few weeks, The Install. If nothing off the shelf will ever fit you, Private OS." },
-    { q: "What is LifeOS AI and how does the message limit work?", a: "LifeOS AI is the private messaging layer that runs on your system, so you can text or chat with your own operating system and get answers based on your setup, goals, and routines. The Install includes 200 messages per month to start. Private OS includes 500 messages per month to start. After the first included month, LifeOS AI is $69 per month to keep active. If you hit your limit, you can upgrade or pause anytime." },
+    { q: "What is LifeOS AI and how does the message limit work?", a: "LifeOS AI is the private messaging layer that runs on your system, so you can text or chat with your own operating system and get answers based on your setup, goals, and routines. The Install and Private OS each include LifeOS AI for your first month. After that it is $69 per month to keep the conversation going, with no message limit." },
     { q: "Is this therapy?", a: "No. This is not therapy, medical advice, or mental health treatment. It is a real system I design and build for you." },
     { q: "Do I need to be neurodivergent?", a: "No. It works especially well for people with ADHD, autism, AuDHD, or high cognitive load, but the system helps anyone whose life has too many open loops." },
     { q: "Do I need Claude or ChatGPT already?", a: "No. We pick the right tools for your situation. You own your own accounts." },
@@ -789,10 +789,10 @@ function FinalCTA() {
             Start With Blueprint <span className="text-muted-foreground/70">$1,500</span>
           </a>
           <a href={LINKS.STRIPE_BUILD_LINK} className="btn-jade hover:btn-jade-hover inline-flex items-center gap-2 rounded-full px-6 py-3.5 text-sm">
-            Build My System <span className="opacity-70">$7,500</span> <ArrowRight />
+            Build My System <span className="opacity-70">$4,500</span> <ArrowRight />
           </a>
           <a href={LINKS.STRIPE_PRIVATE_OS_LINK} className="btn-ghost-gold inline-flex items-center gap-2 rounded-full px-6 py-3.5 text-sm hover:brightness-125">
-            Apply For Private OS <span className="text-muted-foreground/70">$12,000+</span>
+            Apply For Private OS <span className="text-muted-foreground/70">$12,500+</span>
           </a>
         </div>
         <div className="mt-6">
