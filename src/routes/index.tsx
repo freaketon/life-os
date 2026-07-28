@@ -47,8 +47,8 @@ export const Route = createFileRoute("/")({
           areaServed: "Worldwide",
           offers: [
             { "@type": "Offer", name: "Carry-Less Blueprint", price: "1500", priceCurrency: "USD" },
-            { "@type": "Offer", name: "Build My System", price: "7500", priceCurrency: "USD" },
-            { "@type": "Offer", name: "Private Operating System", price: "12000", priceCurrency: "USD" },
+            { "@type": "Offer", name: "The Install", price: "4500", priceCurrency: "USD" },
+            { "@type": "Offer", name: "Private Operating System", price: "12500", priceCurrency: "USD" },
             { "@type": "Offer", name: "Carry-Less OS Monthly Support", price: "1500", priceCurrency: "USD", priceSpecification: { "@type": "UnitPriceSpecification", price: "1500", priceCurrency: "USD", billingIncrement: 1, unitCode: "MON" } },
           ],
         }),
@@ -508,9 +508,8 @@ function Packages() {
     {
       name: "The Install",
       tag: "System Install",
-      price: "$2,500",
+      price: "$4,500",
       priceUnit: "USD",
-      priceNote: "Founding cohort: $1,500",
       desc: "Your life, running on the system. Set up with you in three weeks.",
       outcome: "You leave with a working system running your real life and a plain guide to keep it going without me.",
       deliverables: [
@@ -520,6 +519,7 @@ function Packages() {
         "Your daily and weekly routines, tuned to how your brain works",
         "A plain written guide so you can change anything later without me",
         "A check-in 30 days after, to fix whatever real life breaks",
+        { text: "LifeOS AI access: 200 messages/mo included", kind: "AI" },
       ],
       primary: { label: "Join The Install", href: LINKS.STRIPE_BUILD_LINK },
       secondary: { label: "Book A Fit Call", href: LINKS.BOOKING_CALL_LINK },
@@ -528,7 +528,7 @@ function Packages() {
     {
       name: "Private Operating System",
       tag: "Private OS",
-      price: "$12,000+",
+      price: "$12,500+",
       priceUnit: "USD",
       desc: "A small number of fully bespoke builds per year for complex individuals or companies. Every part designed around your specific life or operation, not a shared framework.",
       outcome: "You get a private system architected end to end around your reality, delivered as a working operating layer you own outright.",
@@ -539,6 +539,7 @@ function Packages() {
         "Custom dashboards and handoff assets",
         "Expanded integrations and testing",
         "Scope and timeline based on complexity",
+        { text: "LifeOS AI access: 500 messages/mo included", kind: "AI" },
       ],
       primary: { label: "Apply For Private OS", href: LINKS.STRIPE_PRIVATE_OS_LINK },
       secondary: { label: "Book A Fit Call", href: LINKS.BOOKING_CALL_LINK },
@@ -591,9 +592,6 @@ function Packages() {
                     <span className="font-display text-5xl text-foreground">{p.price}</span>
                     <span className="text-sm text-muted-foreground">{p.priceUnit}</span>
                   </div>
-                  {p.priceNote && (
-                    <p className="mt-2 text-xs uppercase tracking-[0.22em] text-jade/90">{p.priceNote}</p>
-                  )}
                 </div>
 
                 <p className="text-muted-foreground leading-relaxed text-[15px] mb-4">{p.desc}</p>
@@ -689,6 +687,7 @@ function Packages() {
 function FAQ() {
   const items = [
     { q: "What is the difference between the three levels and how do I know which one is for me?", a: "Blueprint is the plan: you want the map before you commit to building. The Install is the guided system installation: a defined process, a defined timeline, and live sessions where we wire the Carry-Less system into your real life on a proven framework. Private OS is a small number of fully bespoke builds per year: for complex individuals or companies whose life or operation is too specific to fit into a shared framework. Rule of thumb — if you want direction, Blueprint. If you want the system running in your life inside a few weeks, The Install. If nothing off the shelf will ever fit you, Private OS." },
+    { q: "What is LifeOS AI and how does the message limit work?", a: "LifeOS AI is the private messaging layer that runs on your system, so you can text or chat with your own operating system and get answers based on your setup, goals, and routines. The Install includes 200 messages per month to start. Private OS includes 500 messages per month to start. After the first included month, LifeOS AI is $69 per month to keep active. If you hit your limit, you can upgrade or pause anytime." },
     { q: "Is this therapy?", a: "No. This is not therapy, medical advice, or mental health treatment. It is a real system I design and build for you." },
     { q: "Do I need to be neurodivergent?", a: "No. It works especially well for people with ADHD, autism, AuDHD, or high cognitive load, but the system helps anyone whose life has too many open loops." },
     { q: "Do I need Claude or ChatGPT already?", a: "No. We pick the right tools for your situation. You own your own accounts." },
