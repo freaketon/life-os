@@ -508,9 +508,8 @@ function Packages() {
     {
       name: "The Install",
       tag: "System Install",
-      price: "$2,500",
+      price: "$4,500",
       priceUnit: "USD",
-      priceNote: "Founding cohort: $1,500",
       desc: "Your life, running on the system. Set up with you in three weeks.",
       outcome: "You leave with a working system running your real life and a plain guide to keep it going without me.",
       deliverables: [
@@ -520,6 +519,7 @@ function Packages() {
         "Your daily and weekly routines, tuned to how your brain works",
         "A plain written guide so you can change anything later without me",
         "A check-in 30 days after, to fix whatever real life breaks",
+        { text: "LifeOS AI access: 200 messages/mo included", kind: "AI" },
       ],
       primary: { label: "Join The Install", href: LINKS.STRIPE_BUILD_LINK },
       secondary: { label: "Book A Fit Call", href: LINKS.BOOKING_CALL_LINK },
@@ -528,7 +528,7 @@ function Packages() {
     {
       name: "Private Operating System",
       tag: "Private OS",
-      price: "$12,000+",
+      price: "$12,500+",
       priceUnit: "USD",
       desc: "A small number of fully bespoke builds per year for complex individuals or companies. Every part designed around your specific life or operation, not a shared framework.",
       outcome: "You get a private system architected end to end around your reality, delivered as a working operating layer you own outright.",
@@ -539,6 +539,7 @@ function Packages() {
         "Custom dashboards and handoff assets",
         "Expanded integrations and testing",
         "Scope and timeline based on complexity",
+        { text: "LifeOS AI access: 500 messages/mo included", kind: "AI" },
       ],
       primary: { label: "Apply For Private OS", href: LINKS.STRIPE_PRIVATE_OS_LINK },
       secondary: { label: "Book A Fit Call", href: LINKS.BOOKING_CALL_LINK },
