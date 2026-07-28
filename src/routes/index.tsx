@@ -1,16 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { motion, useReducedMotion, AnimatePresence } from "framer-motion";
+import { useLang } from "@/hooks/use-lang";
+import type { Copy, Lang } from "@/content/copy";
 
-// ============================================================
-// REPLACE THESE PLACEHOLDER LINKS BEFORE LAUNCH
-// ============================================================
 const LINKS = {
   STRIPE_BLUEPRINT_LINK: "https://buy.stripe.com/dRmcN6gwZfDS8X29C27Zu00",
   STRIPE_BUILD_LINK: "https://buy.stripe.com/4gMbJ2a8B2R60qw15w7Zu01",
   STRIPE_PRIVATE_OS_LINK: "https://buy.stripe.com/eVq28s4OhfDS4GM4hI7Zu02",
   STRIPE_MONTHLY_SUPPORT_LINK: "https://buy.stripe.com/dRmbJ294xcrG1uAeWm7Zu03",
   BOOKING_CALL_LINK: "https://calendar.app.google/B7jN2x8bw55wXyLY7",
+};
+
+const TIER_LINK: Record<"blueprint" | "install" | "privateOs", string> = {
+  blueprint: LINKS.STRIPE_BLUEPRINT_LINK,
+  install: LINKS.STRIPE_BUILD_LINK,
+  privateOs: LINKS.STRIPE_PRIVATE_OS_LINK,
 };
 
 export const Route = createFileRoute("/")({
@@ -29,7 +34,11 @@ export const Route = createFileRoute("/")({
       },
       { property: "og:url", content: "/" },
     ],
-    links: [{ rel: "canonical", href: "/" }],
+    links: [
+      { rel: "canonical", href: "/" },
+      { rel: "alternate", hrefLang: "en", href: "/?lang=en" },
+      { rel: "alternate", hrefLang: "es", href: "/?lang=es" },
+    ],
     scripts: [
       {
         type: "application/ld+json",
@@ -45,6 +54,7 @@ export const Route = createFileRoute("/")({
           description:
             "Private AI operating system buildouts for founders, creators, and neurodivergent professionals.",
           areaServed: "Worldwide",
+          availableLanguage: ["en", "es"],
           offers: [
             { "@type": "Offer", name: "Carry-Less Blueprint", price: "1500", priceCurrency: "USD" },
             { "@type": "Offer", name: "The Install", price: "4500", priceCurrency: "USD" },
@@ -73,19 +83,25 @@ function useIsMobile() {
 function LandingPage() {
   const reduce = useReducedMotion();
   const isMobile = useIsMobile();
+  const { lang, setLang, t } = useLang();
+
+  useEffect(() => {
+    document.title = t.meta.title;
+  }, [t.meta.title]);
+
   return (
     <main className="relative min-h-screen bg-background text-foreground grain-bg overflow-x-clip">
       <Backdrop />
-      <Nav />
-      <Hero reduce={!!reduce} isMobile={isMobile} />
-      <Manifesto />
-      <Replaces />
-      <HowItWorks />
-      <Packages />
-      <FAQ />
-      <FinalCTA />
-      <Footer />
-      <StickyMobileCTA />
+      <Nav t={t} lang={lang} setLang={setLang} />
+      <Hero t={t} reduce={!!reduce} isMobile={isMobile} />
+      <Manifesto t={t} />
+      <Replaces t={t} />
+      <HowItWorks t={t} />
+      <Packages t={t} />
+      <FAQ t={t} />
+      <FinalCTA t={t} />
+      <Footer t={t} />
+      <StickyMobileCTA t={t} />
     </main>
   );
 }
@@ -118,33 +134,80 @@ function Reveal({
   className?: string;
 }) {
   const reduce = useReducedMotion();
-  const initial =
-    dir === "left"
-      ? { opacity: 0, x: -distance }
-      : dir === "right"
-      ? { opacity: 0, x: distance }
-      : dir === "scale"
-      ? { opacity: 0, scale: 0.96 }
-      : { opacity: 0, y: distance };
-  if (reduce) return <div className={className}>{children}</div>;
+  const ref = useRef<HTMLDivElement | null>(null);
+  const [shown, setShown] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (reduce) {
+      setShown(true);
+      return;
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          setShown(true);
+          io.disconnect();
+        }
+      },
+      { rootMargin: "0px 0px -12% 0px", threshold: 0.12 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [reduce]);
+
+  const offset =
+    dir === "left" ? `translate3d(-${distance}px,0,0)`
+      : dir === "right" ? `translate3d(${distance}px,0,0)`
+        : dir === "scale" ? "scale(0.96)"
+          : `translate3d(0,${distance}px,0)`;
+
   return (
-    <motion.div
+    <div
+      ref={ref}
       className={className}
-      initial={initial}
-      whileInView={{ opacity: 1, x: 0, y: 0, scale: 1 }}
-      viewport={{ once: true, margin: "-60px" }}
-      transition={{ duration, delay, ease: [0.22, 1, 0.36, 1] }}
+      style={{
+        opacity: shown ? 1 : 0,
+        transform: shown ? "none" : offset,
+        transition: `opacity ${duration}s cubic-bezier(0.22,1,0.36,1) ${delay}s, transform ${duration}s cubic-bezier(0.22,1,0.36,1) ${delay}s`,
+        willChange: shown ? "auto" : "opacity, transform",
+      }}
     >
       {children}
-    </motion.div>
+    </div>
+  );
+}
+
+/* ---------------- LANGUAGE TOGGLE ---------------- */
+function LangToggle({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void }) {
+  return (
+    <div
+      className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.03] p-0.5 text-[11px] uppercase tracking-[0.16em]"
+      role="group"
+      aria-label="Language"
+    >
+      {(["en", "es"] as Lang[]).map((l) => (
+        <button
+          key={l}
+          onClick={() => setLang(l)}
+          aria-pressed={lang === l}
+          className={`rounded-full px-2.5 py-1 transition ${
+            lang === l ? "bg-jade text-jade-foreground" : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          {l}
+        </button>
+      ))}
+    </div>
   );
 }
 
 /* ---------------- NAV ---------------- */
-function Nav() {
+function Nav({ t, lang, setLang }: { t: Copy; lang: Lang; setLang: (l: Lang) => void }) {
   return (
     <header className="fixed top-0 left-0 right-0 z-50">
-      <div className="mx-auto max-w-7xl px-6 py-5 flex items-center justify-between">
+      <div className="mx-auto max-w-7xl px-6 py-5 flex items-center justify-between gap-4">
         <a href="#top" className="flex items-center gap-2.5 group">
           <span className="relative flex h-2 w-2">
             <span className="absolute inline-flex h-full w-full rounded-full bg-jade opacity-60 animate-ping" />
@@ -156,27 +219,29 @@ function Nav() {
           </span>
         </a>
         <nav className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
-          <a href="#manifesto" className="hover:text-foreground transition">Manifesto</a>
-          <a href="#how" className="hover:text-foreground transition">How it works</a>
-          <a href="#packages" className="hover:text-foreground transition">Packages</a>
-          <a href="#faq" className="hover:text-foreground transition">FAQ</a>
+          <a href="#manifesto" className="hover:text-foreground transition">{t.nav.manifesto}</a>
+          <a href="#how" className="hover:text-foreground transition">{t.nav.how}</a>
+          <a href="#packages" className="hover:text-foreground transition">{t.nav.packages}</a>
+          <a href="#faq" className="hover:text-foreground transition">{t.nav.faq}</a>
         </nav>
-        <a
-          href={LINKS.BOOKING_CALL_LINK}
-          className="btn-ghost-gold hidden sm:inline-flex items-center rounded-full px-4 py-2 text-sm hover:brightness-125"
-        >
-          Book a fit call
-        </a>
+        <div className="flex items-center gap-3">
+          <LangToggle lang={lang} setLang={setLang} />
+          <a
+            href={LINKS.BOOKING_CALL_LINK}
+            className="btn-ghost-gold hidden sm:inline-flex items-center rounded-full px-4 py-2 text-sm hover:brightness-125"
+          >
+            {t.nav.book}
+          </a>
+        </div>
       </div>
     </header>
   );
 }
 
-/* ---------------- HERO — static 3D scene, no scroll scrubbing ---------------- */
-function Hero({ reduce, isMobile }: { reduce: boolean; isMobile: boolean }) {
+/* ---------------- HERO ---------------- */
+function Hero({ t, reduce, isMobile }: { t: Copy; reduce: boolean; isMobile: boolean }) {
   return (
     <section id="top" className="relative min-h-screen w-full overflow-hidden">
-      {/* Base gradient */}
       <div
         className="absolute inset-0"
         style={{
@@ -185,13 +250,11 @@ function Hero({ reduce, isMobile }: { reduce: boolean; isMobile: boolean }) {
         }}
       />
 
-      {/* Static depth orbs */}
       <div aria-hidden className="absolute inset-0">
         <div className="absolute -top-32 -left-24 h-[560px] w-[560px] rounded-full bg-jade/15 blur-[100px]" />
         <div className="absolute -bottom-40 -right-24 h-[520px] w-[520px] rounded-full bg-gold/10 blur-[100px]" />
       </div>
 
-      {/* Static perspective grid (CSS only, no scroll transforms) */}
       {!reduce && (
         <div
           aria-hidden
@@ -210,7 +273,6 @@ function Hero({ reduce, isMobile }: { reduce: boolean; isMobile: boolean }) {
         />
       )}
 
-      {/* Concentric rings — CSS-only slow spin, desktop only */}
       {!reduce && !isMobile && (
         <div aria-hidden className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
           <div className="relative h-[520px] w-[520px] md:h-[640px] md:w-[640px] animate-[spin_60s_linear_infinite]">
@@ -228,7 +290,6 @@ function Hero({ reduce, isMobile }: { reduce: boolean; isMobile: boolean }) {
         </div>
       )}
 
-      {/* HUD brackets (desktop only) */}
       {!isMobile && (
         <div aria-hidden className="pointer-events-none absolute inset-6 lg:inset-10 z-[5] hidden md:block">
           <span className="absolute top-0 left-0 h-6 w-6 border-l border-t border-jade/50" />
@@ -238,10 +299,8 @@ function Hero({ reduce, isMobile }: { reduce: boolean; isMobile: boolean }) {
         </div>
       )}
 
-      {/* Fade to page */}
       <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-background" />
 
-      {/* Copy */}
       <div className="relative z-10 mx-auto flex min-h-screen max-w-6xl flex-col justify-center px-6 py-24">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
@@ -250,7 +309,7 @@ function Hero({ reduce, isMobile }: { reduce: boolean; isMobile: boolean }) {
           className="flex items-center gap-3 text-xs uppercase tracking-[0.28em] text-muted-foreground/80 mb-8"
         >
           <span className="h-px w-10 bg-jade/60" />
-          Private AI Systems · Alejandro Arango
+          {t.hero.eyebrow}
         </motion.div>
 
         <motion.h1
@@ -259,8 +318,8 @@ function Hero({ reduce, isMobile }: { reduce: boolean; isMobile: boolean }) {
           transition={{ duration: 0.9, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
           className="font-display text-balance text-[clamp(2.5rem,7vw,6rem)] leading-[0.98] text-foreground"
         >
-          Get your life <br className="hidden md:block" />
-          <span className="italic text-shimmer">out of your head.</span>
+          {t.hero.h1a} <br className="hidden md:block" />
+          <span className="italic text-shimmer">{t.hero.h1b}</span>
         </motion.h1>
 
         <motion.p
@@ -269,9 +328,7 @@ function Hero({ reduce, isMobile }: { reduce: boolean; isMobile: boolean }) {
           transition={{ duration: 0.8, delay: 0.25 }}
           className="mt-8 max-w-2xl text-balance text-lg md:text-xl leading-relaxed text-muted-foreground"
         >
-          I build private AI systems that remember what you forget, handle what you
-          keep avoiding, and run the parts of your life your brain has been carrying
-          on memory, guilt, and adrenaline.
+          {t.hero.sub}
         </motion.p>
 
         <motion.ul
@@ -280,9 +337,11 @@ function Hero({ reduce, isMobile }: { reduce: boolean; isMobile: boolean }) {
           transition={{ duration: 0.8, delay: 0.35 }}
           className="mt-6 space-y-2 text-[15px] text-foreground/85"
         >
-          <li className="flex items-start gap-3"><span className="mt-2 h-1 w-4 flex-shrink-0 bg-jade/70" /> You stop holding your to-do list in your head.</li>
-          <li className="flex items-start gap-3"><span className="mt-2 h-1 w-4 flex-shrink-0 bg-jade/70" /> You stop losing hours to inbox, calendar, and admin.</li>
-          <li className="flex items-start gap-3"><span className="mt-2 h-1 w-4 flex-shrink-0 bg-jade/70" /> You stop running your life on anxiety and last-minute effort.</li>
+          {t.hero.bullets.map((b) => (
+            <li key={b} className="flex items-start gap-3">
+              <span className="mt-2 h-1 w-4 flex-shrink-0 bg-jade/70" /> {b}
+            </li>
+          ))}
         </motion.ul>
 
         <motion.div
@@ -295,14 +354,14 @@ function Hero({ reduce, isMobile }: { reduce: boolean; isMobile: boolean }) {
             href="#packages"
             className="btn-jade hover:btn-jade-hover inline-flex items-center gap-2 rounded-full px-7 py-4 text-[15px]"
           >
-            See the packages
+            {t.hero.ctaPackages}
             <ArrowRight />
           </a>
           <a
             href={LINKS.BOOKING_CALL_LINK}
             className="btn-ghost-gold inline-flex items-center gap-2 rounded-full px-7 py-4 text-[15px] hover:brightness-125"
           >
-            Book a fit call
+            {t.hero.ctaCall}
           </a>
         </motion.div>
 
@@ -312,7 +371,7 @@ function Hero({ reduce, isMobile }: { reduce: boolean; isMobile: boolean }) {
           transition={{ duration: 0.8, delay: 0.6 }}
           className="mt-10 max-w-md text-sm text-muted-foreground/70 italic"
         >
-          Limited private builds. Each system is built around a real life.
+          {t.hero.note}
         </motion.p>
       </div>
     </section>
@@ -329,13 +388,14 @@ function ArrowRight() {
 }
 
 /* ---------------- MANIFESTO ---------------- */
-function Manifesto() {
+function Manifesto({ t }: { t: Copy }) {
+  const m = t.manifesto;
   return (
     <section id="manifesto" className="relative py-32 md:py-48 px-6">
       <div className="mx-auto max-w-5xl">
         <div className="mb-12 flex items-center gap-4 text-xs uppercase tracking-[0.28em] text-muted-foreground">
           <span className="h-px w-10 bg-gold/60" />
-          Manifesto
+          {m.label}
         </div>
 
         <Reveal
@@ -345,19 +405,20 @@ function Manifesto() {
           className="glass-panel-strong relative overflow-hidden p-10 md:p-20"
         >
           <div className="relative space-y-8 font-display text-[clamp(1.5rem,3.2vw,2.5rem)] leading-[1.25] text-foreground/95">
-            <p>For years my brain was doing the job of a system.</p>
+            <p>{m.p1}</p>
             <ul className="space-y-2 text-[clamp(1.15rem,2vw,1.5rem)] font-sans text-muted-foreground not-italic">
-              <li><span className="text-foreground/90">Memory</span> was my project manager.</li>
-              <li><span className="text-foreground/90">Anxiety</span> was my reminder app.</li>
-              <li><span className="text-foreground/90">Guilt</span> was my calendar.</li>
-              <li><span className="text-foreground/90">Adrenaline</span> was my execution plan.</li>
+              {m.items.map((it) => (
+                <li key={it.k}>
+                  <span className="text-foreground/90">{it.k}</span> {it.v}
+                </li>
+              ))}
             </ul>
-            <p className="italic text-muted-foreground">It worked until it did not.</p>
-            <p>Now I build the systems I wish I had back then, so the people I work with can put their life down.</p>
+            <p className="italic text-muted-foreground">{m.p2}</p>
+            <p>{m.p3}</p>
             <p className="pt-4">
-              This is not AI to do <span className="italic text-gold">more.</span>
+              {m.p4a} <span className="italic text-gold">{m.p4b}</span>
             </p>
-            <p className="text-jade">This is AI so you can carry less.</p>
+            <p className="text-jade">{m.p5}</p>
           </div>
         </Reveal>
       </div>
@@ -366,13 +427,8 @@ function Manifesto() {
 }
 
 /* ---------------- REPLACES ---------------- */
-function Replaces() {
-  const items = [
-    { title: "Stop holding it all in your head", copy: "Your projects, tasks, and open loops live in the system. You get to close browser tabs and forget things on purpose." },
-    { title: "Stop being your own reminder app", copy: "The system remembers deadlines, follow-ups, birthdays, and the things you keep meaning to get to. You stop startling awake at 2am." },
-    { title: "Stop running your calendar on guilt", copy: "Your week gets planned around what actually matters, not what you feel worst about ignoring." },
-    { title: "Stop needing panic to execute", copy: "Work gets done in normal time, on normal days, without waiting for a deadline to force your hand." },
-  ];
+function Replaces({ t }: { t: Copy }) {
+  const r = t.replaces;
   return (
     <section className="relative py-24 md:py-32 px-6">
       <div className="mx-auto max-w-7xl">
@@ -380,17 +436,17 @@ function Replaces() {
           <Reveal dir="left" distance={50}>
             <div className="mb-4 flex items-center gap-3 text-xs uppercase tracking-[0.28em] text-muted-foreground">
               <span className="h-px w-10 bg-jade/60" />
-              What changes
+              {r.label}
             </div>
             <h2 className="font-display text-balance text-[clamp(2rem,4.5vw,3.5rem)] leading-[1.05]">
-              Four things you stop <br className="hidden md:block" />
-              <span className="italic text-muted-foreground">doing manually.</span>
+              {r.h2a} <br className="hidden md:block" />
+              <span className="italic text-muted-foreground">{r.h2b}</span>
             </h2>
           </Reveal>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {items.map((item, i) => (
+          {r.items.map((item, i) => (
             <Reveal key={item.title} dir="up" distance={30} delay={i * 0.06}>
               <div className="glass-panel p-8 h-full flex flex-col gap-6 relative overflow-hidden">
                 <div className="flex items-center justify-between">
@@ -411,47 +467,25 @@ function Replaces() {
 }
 
 /* ---------------- HOW IT WORKS ---------------- */
-function HowItWorks() {
-  const steps = [
-    {
-      n: "01",
-      title: "We map what you are carrying",
-      copy: "In one working session I map the tasks, decisions, follow-ups, and open loops your brain is holding. You leave with a clear picture of the load, not a longer to-do list.",
-      deliverables: ["Life and work systems audit", "Open-loop inventory", "Tool and account review"],
-    },
-    {
-      n: "02",
-      title: "I design a system that fits your life",
-      copy: "I turn the map into a plan: what your AI handles, what it reminds you of, what it drafts for you, and what stays yours. You approve it before anything gets built.",
-      deliverables: ["AI workflow architecture", "Claude, ChatGPT, or Hermes-based setup", "Personal operating protocols"],
-    },
-    {
-      n: "03",
-      title: "I build it and hand it over",
-      copy: "You get a working system you can actually use, with documentation and a walkthrough. You do not need to become an engineer or a productivity nerd to run it.",
-      deliverables: ["Implementation and testing", "Handoff documentation", "Optional monthly support"],
-    },
-  ];
+function HowItWorks({ t }: { t: Copy }) {
+  const h = t.how;
   return (
     <section id="how" className="relative py-28 md:py-40 px-6">
       <div className="mx-auto max-w-7xl">
         <Reveal dir="right" distance={50} className="mb-20 max-w-3xl">
           <div className="mb-4 flex items-center gap-3 text-xs uppercase tracking-[0.28em] text-muted-foreground">
             <span className="h-px w-10 bg-gold/60" />
-            How it works
+            {h.label}
           </div>
           <h2 className="font-display text-balance text-[clamp(2rem,5vw,4rem)] leading-[1.02]">
-            Three steps to a life <br />
-            that <span className="italic text-jade">runs itself.</span>
+            {h.h2a} <br />
+            <span className="italic text-jade">{h.h2b}</span>
           </h2>
-          <p className="mt-6 text-lg leading-relaxed text-muted-foreground max-w-2xl">
-            This is not coaching. It is not therapy. It is a real system, built around how your
-            life actually breaks, so the parts that keep failing stop failing.
-          </p>
+          <p className="mt-6 text-lg leading-relaxed text-muted-foreground max-w-2xl">{h.intro}</p>
         </Reveal>
 
         <div className="space-y-6">
-          {steps.map((s, i) => (
+          {h.steps.map((s, i) => (
             <Reveal key={s.n} dir="up" distance={40} delay={i * 0.08}>
               <article className="glass-panel p-8 md:p-12 relative overflow-hidden hover:border-jade/30 transition">
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12">
@@ -464,7 +498,7 @@ function HowItWorks() {
                     <p className="text-muted-foreground leading-relaxed text-[15px] md:text-base">{s.copy}</p>
                   </div>
                   <div className="md:col-span-3">
-                    <p className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground/70 mb-4">Deliverables</p>
+                    <p className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground/70 mb-4">{h.deliverablesLabel}</p>
                     <ul className="space-y-3">
                       {s.deliverables.map((d) => (
                         <li key={d} className="flex items-start gap-3 text-sm text-foreground/85">
@@ -485,127 +519,65 @@ function HowItWorks() {
 }
 
 /* ---------------- PACKAGES ---------------- */
-function Packages() {
-  const packages = [
-    {
-      name: "Carry-Less Blueprint",
-      tag: "Blueprint",
-      price: "$1,500",
-      priceUnit: "USD",
-      desc: "You get a clear plan for the exact system your life needs, before you commit to building anything. Best if you want the map first.",
-      outcome: "By the end you know exactly what to build, in what order, and can start acting on the plan the same week — with or without me.",
-      deliverables: [
-        "Personal systems audit",
-        "Open-loop and load map",
-        "Recommended AI stack",
-        "Workflow architecture blueprint",
-        "Priority build roadmap",
-      ],
-      primary: { label: "Start With Blueprint", href: LINKS.STRIPE_BLUEPRINT_LINK },
-      secondary: { label: "Book A Fit Call", href: LINKS.BOOKING_CALL_LINK },
-      featured: false,
-    },
-    {
-      name: "The Install",
-      tag: "System Install",
-      price: "$4,500",
-      priceUnit: "USD",
-      desc: "Your life, running on the system. Set up with you in three weeks.",
-      outcome: "You leave with a working system running your real life and a plain guide to keep it going without me.",
-      deliverables: [
-        "Your full audit: where your time, energy, and attention actually leak",
-        "The complete Carry-Less system, the same one I run my own life on",
-        "Set up together, live, around your real tools, calendar, and roles",
-        "Your daily and weekly routines, tuned to how your brain works",
-        "A plain written guide so you can change anything later without me",
-        "A check-in 30 days after, to fix whatever real life breaks",
-        { text: "LifeOS AI access: 1 month included", kind: "AI" },
-      ],
-      primary: { label: "Join The Install", href: LINKS.STRIPE_BUILD_LINK },
-      secondary: { label: "Book A Fit Call", href: LINKS.BOOKING_CALL_LINK },
-      featured: true,
-    },
-    {
-      name: "Private Operating System",
-      tag: "Private OS",
-      price: "$12,500+",
-      priceUnit: "USD",
-      desc: "A small number of fully bespoke builds per year for complex individuals or companies. Every part designed around your specific life or operation, not a shared framework.",
-      outcome: "You get a private system architected end to end around your reality, delivered as a working operating layer you own outright.",
-      deliverables: [
-        "Everything in The Install, fully bespoke",
-        "Life or operation architecture from scratch",
-        "Advanced agent and workflow design",
-        "Custom dashboards and handoff assets",
-        "Expanded integrations and testing",
-        "Scope and timeline based on complexity",
-        { text: "LifeOS AI access: 1 month included", kind: "AI" },
-      ],
-      primary: { label: "Apply For Private OS", href: LINKS.STRIPE_PRIVATE_OS_LINK },
-      secondary: { label: "Book A Fit Call", href: LINKS.BOOKING_CALL_LINK },
-      featured: false,
-    },
-  ];
-
+function Packages({ t }: { t: Copy }) {
+  const p = t.packages;
   return (
     <section id="packages" className="relative py-28 md:py-40 px-6">
       <div className="mx-auto max-w-7xl">
         <Reveal dir="left" distance={50} className="mb-16 max-w-3xl">
           <div className="mb-4 flex items-center gap-3 text-xs uppercase tracking-[0.28em] text-muted-foreground">
             <span className="h-px w-10 bg-jade/60" />
-            Packages
+            {p.label}
           </div>
           <h2 className="font-display text-balance text-[clamp(2rem,5vw,4rem)] leading-[1.02]">
-            Pick where you want <span className="italic text-muted-foreground">to start.</span>
+            {p.h2a} <span className="italic text-muted-foreground">{p.h2b}</span>
           </h2>
-          <p className="mt-6 text-lg leading-relaxed text-muted-foreground max-w-2xl">
-            Three ways in: get the plan, join the install, or apply for a fully private build.
-          </p>
+          <p className="mt-6 text-lg leading-relaxed text-muted-foreground max-w-2xl">{p.intro}</p>
         </Reveal>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
-          {packages.map((p, i) => (
-            <Reveal key={p.name} dir="up" distance={40} delay={i * 0.08}>
+          {p.tiers.map((tier, i) => (
+            <Reveal key={tier.name} dir="up" distance={40} delay={i * 0.08}>
               <div
                 className={`relative flex flex-col h-full p-8 md:p-10 rounded-2xl ${
-                  p.featured
+                  tier.featured
                     ? "glass-panel-strong border-jade/40 shadow-[0_40px_120px_-20px_rgba(80,220,160,0.25)]"
                     : "glass-panel"
                 }`}
               >
-                {p.featured && (
+                {tier.featured && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                     <span className="inline-flex items-center gap-2 rounded-full bg-jade px-4 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-jade-foreground">
-                      Most chosen
+                      {p.mostChosen}
                     </span>
                   </div>
                 )}
                 <div className="flex items-start justify-between mb-6">
                   <div>
-                    <p className="text-[10px] uppercase tracking-[0.28em] text-gold mb-3">{p.tag}</p>
-                    <h3 className="font-display text-3xl leading-tight text-foreground">{p.name}</h3>
+                    <p className="text-[10px] uppercase tracking-[0.28em] text-gold mb-3">{tier.tag}</p>
+                    <h3 className="font-display text-3xl leading-tight text-foreground">{tier.name}</h3>
                   </div>
                 </div>
 
                 <div className="mb-6">
                   <div className="flex items-baseline gap-2">
-                    <span className="font-display text-5xl text-foreground">{p.price}</span>
-                    <span className="text-sm text-muted-foreground">{p.priceUnit}</span>
+                    <span className="font-display text-5xl text-foreground">{tier.price}</span>
+                    <span className="text-sm text-muted-foreground">{tier.priceUnit}</span>
                   </div>
                 </div>
 
-                <p className="text-muted-foreground leading-relaxed text-[15px] mb-4">{p.desc}</p>
+                <p className="text-muted-foreground leading-relaxed text-[15px] mb-4">{tier.desc}</p>
                 <p className="text-foreground/90 leading-relaxed text-[15px] mb-8 border-l-2 border-jade/60 pl-4">
-                  {p.outcome}
+                  {tier.outcome}
                 </p>
 
                 <div className="hairline mb-6" />
 
                 <ul className="space-y-3 mb-10 flex-1">
-                  {p.deliverables.map((d, idx) => {
+                  {tier.deliverables.map((d, idx) => {
                     const isObj = typeof d === "object";
-                    const text = isObj ? (d as any).text : (d as string);
-                    const kind = isObj ? (d as any).kind : null;
+                    const text = isObj ? d.text : d;
+                    const kind = isObj ? d.kind : null;
                     return (
                       <li key={idx} className="flex items-start gap-3 text-sm text-foreground/85">
                         <svg className="mt-1 h-3.5 w-3.5 flex-shrink-0 text-jade" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -626,18 +598,18 @@ function Packages() {
 
                 <div className="flex flex-col gap-3">
                   <a
-                    href={p.primary.href}
+                    href={TIER_LINK[tier.link]}
                     className={`inline-flex items-center justify-center gap-2 rounded-full px-6 py-3.5 text-sm font-semibold transition ${
-                      p.featured ? "btn-jade hover:btn-jade-hover" : "bg-foreground text-background hover:bg-foreground/90"
+                      tier.featured ? "btn-jade hover:btn-jade-hover" : "bg-foreground text-background hover:bg-foreground/90"
                     }`}
                   >
-                    {p.primary.label} <ArrowRight />
+                    {tier.primaryLabel} <ArrowRight />
                   </a>
                   <a
-                    href={p.secondary.href}
+                    href={LINKS.BOOKING_CALL_LINK}
                     className="btn-ghost-gold inline-flex items-center justify-center rounded-full px-6 py-3.5 text-sm hover:brightness-125"
                   >
-                    {p.secondary.label}
+                    {tier.secondaryLabel}
                   </a>
                 </div>
               </div>
@@ -649,55 +621,39 @@ function Packages() {
         <Reveal dir="up" distance={30} delay={0.1}>
           <div className="mt-10 glass-panel rounded-2xl p-6 md:p-8 flex flex-col md:flex-row md:items-center gap-6 md:gap-10">
             <div className="flex-1">
-              <p className="text-[10px] uppercase tracking-[0.28em] text-gold mb-2">Add-on · Ongoing Care</p>
+              <p className="text-[10px] uppercase tracking-[0.28em] text-gold mb-2">{p.addon.label}</p>
               <h3 className="font-display text-2xl leading-tight text-foreground mb-2">
-                Monthly Support <span className="text-muted-foreground text-lg">— $1,500 / month</span>
+                {p.addon.title} <span className="text-muted-foreground text-lg">— {p.addon.priceLine}</span>
               </h3>
-              <p className="text-muted-foreground text-[15px] leading-relaxed">
-                Add ongoing support to any of the three tiers above. Monthly workflow review, prompt refinement, documentation updates, and system adjustments as your life and tools change.
-              </p>
+              <p className="text-muted-foreground text-[15px] leading-relaxed">{p.addon.copy}</p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 md:flex-shrink-0">
               <a
                 href={LINKS.STRIPE_MONTHLY_SUPPORT_LINK}
                 className="inline-flex items-center justify-center gap-2 rounded-full px-6 py-3.5 text-sm font-semibold bg-foreground text-background hover:bg-foreground/90 transition"
               >
-                Activate Monthly Support <ArrowRight />
+                {p.addon.cta} <ArrowRight />
               </a>
               <a
                 href={LINKS.BOOKING_CALL_LINK}
                 className="btn-ghost-gold inline-flex items-center justify-center rounded-full px-6 py-3.5 text-sm hover:brightness-125"
               >
-                Ask A Question
+                {p.addon.ask}
               </a>
             </div>
           </div>
         </Reveal>
 
-        <p className="mt-12 max-w-2xl text-sm text-muted-foreground/75 italic leading-relaxed">
-          Private builds are limited because each one is built around a real life. No
-          countdowns. No fake scarcity. Just the reality that deep custom work takes focus.
-        </p>
+        <p className="mt-12 max-w-2xl text-sm text-muted-foreground/75 italic leading-relaxed">{p.note}</p>
       </div>
     </section>
   );
 }
 
 /* ---------------- FAQ ---------------- */
-function FAQ() {
-  const items = [
-    { q: "What is the difference between the three levels and how do I know which one is for me?", a: "Blueprint is the plan: you want the map before you commit to building. The Install is the guided system installation: a defined process, a defined timeline, and live sessions where we wire the Carry-Less system into your real life on a proven framework. Private OS is a small number of fully bespoke builds per year: for complex individuals or companies whose life or operation is too specific to fit into a shared framework. Rule of thumb — if you want direction, Blueprint. If you want the system running in your life inside a few weeks, The Install. If nothing off the shelf will ever fit you, Private OS." },
-    { q: "What is LifeOS AI and how does the message limit work?", a: "LifeOS AI is the private messaging layer that runs on your system, so you can text or chat with your own operating system and get answers based on your setup, goals, and routines. The Install and Private OS each include LifeOS AI for your first month. After that it is $69 per month to keep the conversation going, with no message limit." },
-    { q: "Is this therapy?", a: "No. This is not therapy, medical advice, or mental health treatment. It is a real system I design and build for you." },
-    { q: "Do I need to be neurodivergent?", a: "No. It works especially well for people with ADHD, autism, AuDHD, or high cognitive load, but the system helps anyone whose life has too many open loops." },
-    { q: "Do I need Claude or ChatGPT already?", a: "No. We pick the right tools for your situation. You own your own accounts." },
-    { q: "Is software included?", a: "No. Software, hosting, and third-party tools are billed separately and owned by you." },
-    { q: "Can you build it fully for me?", a: "Yes. That is the Private OS tier." },
-    { q: "Can I start smaller?", a: "Yes. Start with the Blueprint if you want the plan before the build." },
-    { q: "How long does it take?", a: "Blueprint is delivered soon after the audit. Build is usually 2 to 3 weeks. Private OS depends on complexity." },
-    { q: "What happens after the build?", a: "You run it yourself, or you keep me on with Monthly Support at $1,500 per month." },
-  ];
+function FAQ({ t }: { t: Copy }) {
   const [open, setOpen] = useState<number | null>(0);
+  const f = t.faq;
 
   return (
     <section id="faq" className="relative py-28 md:py-40 px-6">
@@ -705,15 +661,15 @@ function FAQ() {
         <Reveal dir="right" distance={50} className="mb-16">
           <div className="mb-4 flex items-center gap-3 text-xs uppercase tracking-[0.28em] text-muted-foreground">
             <span className="h-px w-10 bg-gold/60" />
-            Questions
+            {f.label}
           </div>
           <h2 className="font-display text-balance text-[clamp(2rem,5vw,3.5rem)] leading-[1.05]">
-            Answered <span className="italic text-muted-foreground">before you ask.</span>
+            {f.h2a} <span className="italic text-muted-foreground">{f.h2b}</span>
           </h2>
         </Reveal>
 
         <Reveal dir="up" distance={40} className="glass-panel divide-y divide-white/[0.06]">
-          {items.map((item, i) => {
+          {f.items.map((item, i) => {
             const isOpen = open === i;
             return (
               <div key={item.q}>
@@ -762,7 +718,8 @@ function FAQ() {
 }
 
 /* ---------------- FINAL CTA ---------------- */
-function FinalCTA() {
+function FinalCTA({ t }: { t: Copy }) {
+  const c = t.finalCta;
   return (
     <section className="relative py-28 md:py-40 px-6 overflow-hidden">
       <div className="absolute inset-0 -z-10">
@@ -771,33 +728,30 @@ function FinalCTA() {
       <div className="mx-auto max-w-5xl text-center">
         <Reveal dir="up" distance={30}>
           <h2 className="font-display text-balance text-[clamp(2.2rem,6vw,5rem)] leading-[1.02]">
-            Put your life down. <br className="hidden md:block" />
-            <span className="italic text-jade">Let the system carry it.</span>
+            {c.h2a} <br className="hidden md:block" />
+            <span className="italic text-jade">{c.h2b}</span>
           </h2>
           <div className="mt-8 space-y-4 text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            <p>
-              If your life is running on memory, guilt, and last-minute effort, more discipline
-              is not the fix.
-            </p>
-            <p className="text-foreground">A real system is.</p>
-            <p className="text-sm uppercase tracking-[0.28em] text-muted-foreground/70 pt-4">Pick where you want to start.</p>
+            <p>{c.p1}</p>
+            <p className="text-foreground">{c.p2}</p>
+            <p className="text-sm uppercase tracking-[0.28em] text-muted-foreground/70 pt-4">{c.p3}</p>
           </div>
         </Reveal>
 
         <div className="mt-12 flex flex-wrap justify-center gap-3">
           <a href={LINKS.STRIPE_BLUEPRINT_LINK} className="btn-ghost-gold inline-flex items-center gap-2 rounded-full px-6 py-3.5 text-sm hover:brightness-125">
-            Start With Blueprint <span className="text-muted-foreground/70">$1,500</span>
+            {c.blueprint} <span className="text-muted-foreground/70">$1,500</span>
           </a>
           <a href={LINKS.STRIPE_BUILD_LINK} className="btn-jade hover:btn-jade-hover inline-flex items-center gap-2 rounded-full px-6 py-3.5 text-sm">
-            Build My System <span className="opacity-70">$4,500</span> <ArrowRight />
+            {c.install} <span className="opacity-70">$4,500</span> <ArrowRight />
           </a>
           <a href={LINKS.STRIPE_PRIVATE_OS_LINK} className="btn-ghost-gold inline-flex items-center gap-2 rounded-full px-6 py-3.5 text-sm hover:brightness-125">
-            Apply For Private OS <span className="text-muted-foreground/70">$12,500+</span>
+            {c.privateOs} <span className="text-muted-foreground/70">$12,500+</span>
           </a>
         </div>
         <div className="mt-6">
           <a href={LINKS.BOOKING_CALL_LINK} className="text-sm text-muted-foreground hover:text-foreground transition underline underline-offset-4 decoration-jade/40">
-            Or book a fit call first →
+            {c.or}
           </a>
         </div>
       </div>
@@ -806,17 +760,15 @@ function FinalCTA() {
 }
 
 /* ---------------- FOOTER ---------------- */
-function Footer() {
+function Footer({ t }: { t: Copy }) {
   return (
     <footer className="relative border-t border-white/[0.06] px-6 py-14">
       <div className="mx-auto max-w-7xl grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
         <div>
           <div className="font-display text-2xl text-foreground">ArangoRaw</div>
-          <div className="text-sm text-muted-foreground mt-1">The Carry-Less Operating System</div>
+          <div className="text-sm text-muted-foreground mt-1">{t.footer.sub}</div>
         </div>
-        <p className="text-sm text-muted-foreground italic md:text-center">
-          Built for people who were carrying too much for too long.
-        </p>
+        <p className="text-sm text-muted-foreground italic md:text-center">{t.footer.tagline}</p>
         <div className="md:text-right text-xs text-muted-foreground/60">
           © {new Date().getFullYear()} ArangoRaw · Alejandro Arango
         </div>
@@ -826,25 +778,25 @@ function Footer() {
 }
 
 /* ---------------- STICKY MOBILE CTA ---------------- */
-function StickyMobileCTA() {
+function StickyMobileCTA({ t }: { t: Copy }) {
   return (
     <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 pb-[max(env(safe-area-inset-bottom),0.5rem)] px-3 pt-3">
       <div className="glass-panel-strong flex items-center gap-2 p-2.5">
         <div className="flex-1 pl-2">
-          <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Build your</p>
-          <p className="text-sm font-display text-foreground leading-tight">Carry-Less OS</p>
+          <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">{t.sticky.small}</p>
+          <p className="text-sm font-display text-foreground leading-tight">{t.sticky.big}</p>
         </div>
         <a
           href={LINKS.STRIPE_BUILD_LINK}
           className="btn-jade inline-flex items-center rounded-full px-4 py-2.5 text-xs font-semibold"
         >
-          Pay
+          {t.sticky.pay}
         </a>
         <a
           href={LINKS.BOOKING_CALL_LINK}
           className="btn-ghost-gold inline-flex items-center rounded-full px-4 py-2.5 text-xs"
         >
-          Call
+          {t.sticky.call}
         </a>
       </div>
     </div>
