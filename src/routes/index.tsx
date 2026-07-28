@@ -47,8 +47,8 @@ export const Route = createFileRoute("/")({
           areaServed: "Worldwide",
           offers: [
             { "@type": "Offer", name: "Carry-Less Blueprint", price: "1500", priceCurrency: "USD" },
-            { "@type": "Offer", name: "Build My System", price: "7500", priceCurrency: "USD" },
-            { "@type": "Offer", name: "Private Operating System", price: "12000", priceCurrency: "USD" },
+            { "@type": "Offer", name: "The Install", price: "4500", priceCurrency: "USD" },
+            { "@type": "Offer", name: "Private Operating System", price: "12500", priceCurrency: "USD" },
             { "@type": "Offer", name: "Carry-Less OS Monthly Support", price: "1500", priceCurrency: "USD", priceSpecification: { "@type": "UnitPriceSpecification", price: "1500", priceCurrency: "USD", billingIncrement: 1, unitCode: "MON" } },
           ],
         }),
