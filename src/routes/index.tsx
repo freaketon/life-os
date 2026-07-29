@@ -6,8 +6,8 @@ import type { Copy, Lang } from "@/content/copy";
 
 const LINKS = {
   STRIPE_BLUEPRINT_LINK: "https://buy.stripe.com/dRmcN6gwZfDS8X29C27Zu00",
-  STRIPE_BUILD_LINK: "https://buy.stripe.com/4gMbJ2a8B2R60qw15w7Zu01",
-  STRIPE_PRIVATE_OS_LINK: "https://buy.stripe.com/eVq28s4OhfDS4GM4hI7Zu02",
+  STRIPE_BUILD_LINK: "https://buy.stripe.com/eVq4gA2G963ib5a4hI7Zu05",
+  STRIPE_PRIVATE_OS_LINK: "https://buy.stripe.com/bJe9AUa8BezOehmcOe7Zu04",
   STRIPE_MONTHLY_SUPPORT_LINK: "https://buy.stripe.com/dRmbJ294xcrG1uAeWm7Zu03",
   BOOKING_CALL_LINK: "https://calendar.app.google/B7jN2x8bw55wXyLY7",
 };
